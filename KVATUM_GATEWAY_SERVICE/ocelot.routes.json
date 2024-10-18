@@ -1,0 +1,250 @@
+{
+    "Routes":[
+        {
+            "DownstreamPathTemplate": "/api/signup/request",
+            "DangerousAcceptAnyServerCertificateValidator": true,
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-auth-service",
+                    "Port": 8888
+                }
+            ],
+            "UpstreamPathTemplate": "/api/signup/request",
+            "UpstreamHttpMethod": [ "POST" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/api/signup/complete",
+            "DangerousAcceptAnyServerCertificateValidator": true,
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-auth-service",
+                    "Port": 8888
+                }
+            ],
+            "UpstreamPathTemplate": "/api/signup/complete",
+            "UpstreamHttpMethod": [ "POST" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/api/signin",
+            "DangerousAcceptAnyServerCertificateValidator": true,
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-auth-service",
+                    "Port": 8888
+                }
+            ],
+            "UpstreamPathTemplate": "/api/signin",
+            "UpstreamHttpMethod": [ "POST" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/api/refresh",
+            "DangerousAcceptAnyServerCertificateValidator": true,
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-auth-service",
+                    "Port": 8888
+                }
+            ],
+            "UpstreamPathTemplate": "/api/refresh",
+            "UpstreamHttpMethod": [ "POST" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/api/profile",
+            "DangerousAcceptAnyServerCertificateValidator": true,
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-auth-service",
+                    "Port": 8888
+                }
+            ],
+            "UpstreamPathTemplate": "/api/profile",
+            "UpstreamHttpMethod": [ "GET" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/api/user",
+            "DangerousAcceptAnyServerCertificateValidator": true,
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-auth-service",
+                    "Port": 8888
+                }
+            ],
+            "UpstreamPathTemplate": "/api/user",
+            "UpstreamHttpMethod": [ "GET" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/api/user/{id}",
+            "DangerousAcceptAnyServerCertificateValidator": true,
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-auth-service",
+                    "Port": 8888
+                }
+            ],
+            "UpstreamPathTemplate": "/api/user/{id}",
+            "UpstreamHttpMethod": [ "GET" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/swagger/{everything}",
+            "DangerousAcceptAnyServerCertificateValidator": true,
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-auth-service",
+                    "Port": 8888
+                }
+            ],
+            "UpstreamPathTemplate": "/auth/swagger/{everything}",
+            "UpstreamHttpMethod": [ "GET" ]
+        },
+
+
+
+
+
+
+        {
+            "DownstreamPathTemplate": "/api/chats",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-chat-flow-service",
+                    "Port": 80
+                }
+            ],
+            "UpstreamPathTemplate": "/api/chats",
+            "UpstreamHttpMethod": [ "GET" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/api/chat",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-chat-flow-service",
+                    "Port": 80
+                }
+            ],
+            "UpstreamPathTemplate": "/api/chat",
+            "UpstreamHttpMethod": [ "POST", "DELETE" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/api/chat/attach",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-chat-flow-service",
+                    "Port": 80
+                }
+            ],
+            "UpstreamPathTemplate": "/api/chat/attach",
+            "UpstreamHttpMethod": [ "POST" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/api/hub",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-chat-flow-service",
+                    "Port": 80
+                }
+            ],
+            "UpstreamPathTemplate": "/api/hub",
+            "UpstreamHttpMethod": [ "POST" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/api/hubs/me",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-chat-flow-service",
+                    "Port": 80
+                }
+            ],
+            "UpstreamPathTemplate": "/api/hubs/me",
+            "UpstreamHttpMethod": [ "GET" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/api/hub/link/{hubId}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-chat-flow-service",
+                    "Port": 80
+                }
+            ],
+            "UpstreamPathTemplate": "/api/hub/link/{hubId}",
+            "UpstreamHttpMethod": [ "GET" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/api/hub/invitation",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-chat-flow-service",
+                    "Port": 80
+                }
+            ],
+            "UpstreamPathTemplate": "/api/hub/invitation",
+            "UpstreamHttpMethod": [ "GET" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/api/workspaces",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-chat-flow-service",
+                    "Port": 80
+                }
+            ],
+            "UpstreamPathTemplate": "/api/workspaces",
+            "UpstreamHttpMethod": [ "GET" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/api/workspace",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-chat-flow-service",
+                    "Port": 80
+                }
+            ],
+            "UpstreamPathTemplate": "/api/workspace",
+            "UpstreamHttpMethod": [ "POST", "DELETE" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/swagger/{everything}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-chat-flow-service",
+                    "Port": 80
+                }
+            ],
+            "UpstreamPathTemplate": "/chatflow/swagger/{everything}",
+            "UpstreamHttpMethod": [ "GET" ]
+        }
+    ]
+}

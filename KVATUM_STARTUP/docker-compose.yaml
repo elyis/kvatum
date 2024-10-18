@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+
+  kvatum-gateway-service:
+    extends:
+      file: services/gateway-service.yaml
+      service: kvatum-gateway-service
+
+  kvatum-email-service:
+    extends:
+      file: services/email-service.yaml
+      service: kvatum-email-service
+
+  kvatum-auth-service:
+    extends:
+      file: services/auth-service.yaml
+      service: kvatum-auth-service
+
+  kvatum-chat-flow-service:
+    extends:
+      file: services/chat-flow-service.yaml
+      service: kvatum-chat-flow-service
+
+  kvatum-auth-db:
+    extends:
+      file: services/auth-db.yaml
+      service: kvatum-auth-db
+
+  kvatum-chat-flow-db:
+    extends:
+      file: services/chat-flow-db.yaml
+      service: kvatum-chat-flow-db
+
+  kvatum-rabbitmq-service:
+    extends:
+      file: services/rabbitmq-service.yaml
+      service: rabbitmq
+
+  # kvatum-file-service:
+  #   extends:
+  #     file: services/file-service.yaml
+  #     service: kvatum-file-server
+
+
+volumes:
+  kvatum-auth-data:
+  kvatum-chat-flow-data:
+
+  kvatum-file-server-data:
+  kvatum-rabbitmq:
+  data-protection-keys:

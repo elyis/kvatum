@@ -1,0 +1,1 @@
+docker build -t kvatum-email-service .
