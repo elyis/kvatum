@@ -21,13 +21,20 @@ namespace KVATUM_AUTH_SERVICE.Core.Entities.Models
 
         public ProfileBody ToProfileBody()
         {
+            string? urlIcon = string.IsNullOrEmpty(Image) ? null : $"{Constants.WebUrlToProfileImage}/{Image}";
+
             return new ProfileBody
             {
                 Id = Id,
                 Nickname = Nickname,
                 Role = Enum.Parse<AccountRole>(Role),
-                UrlIcon = string.IsNullOrEmpty(Image) ? null : $"{Constants.WebUrlToProfileImage}/{Image}",
-                Identifier = Email,
+                Images = urlIcon is null ? new() : new List<ImageWithResolutionBody>
+                {
+                    new() { Resolution = ImageResolutions.Small, UrlImage = $"{urlIcon}?width=128&height=128" },
+                    new() { Resolution = ImageResolutions.Medium, UrlImage = $"{urlIcon}?width=256&height=256" },
+                    new() { Resolution = ImageResolutions.Big, UrlImage = $"{urlIcon}?width=512&height=512" },
+                },
+                Email = Email,
             };
         }
 

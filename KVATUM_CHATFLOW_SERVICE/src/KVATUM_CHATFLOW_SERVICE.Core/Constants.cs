@@ -1,7 +1,8 @@
 namespace Microservice_module.Core
 {
-    public static class Constants
+    public class Constants
     {
-        public static readonly string ServerUrl = Environment.GetEnvironmentVariable("ServerUrl") ?? throw new Exception("ServerUrl is not found in enviroment variables");
+        public static readonly string FileServerUrl = Environment.GetEnvironmentVariable("FILE_SERVER_URL") ?? throw new Exception("FileServerUrl is not found in enviroment variables");
+        public static readonly string WebUrlToHubIcon = $"{FileServerUrl}/api/images/hub";
     }
 }

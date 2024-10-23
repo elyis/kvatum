@@ -150,5 +150,16 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
         {
             return await _context.HubJoiningInvitations.FirstOrDefaultAsync(e => e.HashInvitation == hash);
         }
+
+        public async Task<Hub?> UpdateHubIconAsync(Guid id, string fileName)
+        {
+            var hub = await GetHubByIdAsync(id);
+            if (hub == null)
+                return null;
+
+            hub.Icon = fileName;
+            await _context.SaveChangesAsync();
+            return hub;
+        }
     }
 }

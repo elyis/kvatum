@@ -245,6 +245,73 @@
             ],
             "UpstreamPathTemplate": "/chatflow/swagger/{everything}",
             "UpstreamHttpMethod": [ "GET" ]
+        },
+
+
+
+        {
+            "DownstreamPathTemplate": "/swagger/{everything}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-file-service",
+                    "Port": 80
+                }
+            ],
+            "UpstreamPathTemplate": "/file/swagger/{everything}",
+            "UpstreamHttpMethod": [ "GET" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/api/hub/upload",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-file-service",
+                    "Port": 80
+                }
+            ],
+            "UpstreamPathTemplate": "/api/hub/upload",
+            "UpstreamHttpMethod": [ "POST" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/api/images/hub/{everything}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-file-service",
+                    "Port": 80
+                }
+            ],
+            "UpstreamPathTemplate": "/api/images/hub/{everything}",
+            "UpstreamHttpMethod": [ "GET" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/api/profile/upload",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-file-service",
+                    "Port": 80
+                }
+            ],
+            "UpstreamPathTemplate": "/api/profile/upload",
+            "UpstreamHttpMethod": [ "POST" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/api/images/profile/{everything}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-file-service",
+                    "Port": 80
+                }
+            ],
+            "UpstreamPathTemplate": "/api/images/profile/{everything}",
+            "UpstreamHttpMethod": [ "GET" ]
         }
     ]
 }

@@ -124,8 +124,7 @@ void ConfigureServices(IServiceCollection services)
                 rabbitMqHostname,
                 rabbitMqUserName,
                 rabbitMqPassword,
-                profileImageQueueName,
-                provider.GetRequiredService<INotifyService>()
+                profileImageQueueName
             );
         });
     services.AddScoped<IUserService, UserService>();

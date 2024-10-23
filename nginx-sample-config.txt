@@ -1,47 +1,51 @@
-server 
-{
-    listen 80;
-    server_name _;
+#load_module modules/ngx_http_image_filter_module.so;
+
+server {
+    listen 80 default_server;
     client_max_body_size 100M;
 
-    location /singin-google {
-        proxy_pass https://localhost:8888;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_http_version 1.1;
-    }
+    server_name itsmeutya.com www.itsmeutya.com;
 
-    location /signin-google {
-        proxy_pass https://localhost:8888;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_http_version 1.1;
-    }
+    location /api/images/ {
+        map $arg_width $width {
+            default 100;
+            ~^[0-9]+$ $arg_width;
+        }
 
-    location /google-login {
-        proxy_pass https://localhost:8888;
+        map $arg_height $height {
+            default 100;
+            ~^[0-9]+$ $arg_height;
+        }
+
+        if ($width > 1024) {
+            set $width 1024;
+        }
+
+        if ($height > 1024) {
+            set $height 1024;
+        }
+
+        proxy_set_header Accept $http_accept;
         proxy_set_header Host $host;
+        proxy_set_header User-Agent $http_user_agent;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_http_version 1.1;
-   }
+        proxy_pass http://localhost:8081;
+
+        image_filter_buffer 10M;
+        image_filter resize $width $height;
+        image_filter_webp_quality 80;
+    }
 
     location / {
-        proxy_pass http://localhost:8080;
+        proxy_pass http://localhost:8081;
         proxy_set_header Host $host;
+        proxy_set_header User-Agent $http_user_agent;
+        proxy_set_header Accept $http_accept;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-Host $host;
-        proxy_set_header X-Forwarded-Port $server_port;
-
         proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
     }
 }

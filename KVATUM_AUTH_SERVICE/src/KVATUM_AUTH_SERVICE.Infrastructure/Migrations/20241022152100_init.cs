@@ -53,10 +53,7 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Ip = table.Column<string>(type: "text", nullable: false),
-                    ClientId = table.Column<string>(type: "text", nullable: false),
-                    OS = table.Column<string>(type: "text", nullable: false),
-                    DeviceName = table.Column<string>(type: "text", nullable: false),
-                    Model = table.Column<string>(type: "text", nullable: false),
+                    UserAgent = table.Column<string>(type: "text", nullable: false),
                     AccountId = table.Column<Guid>(type: "uuid", nullable: false),
                     Token = table.Column<string>(type: "text", nullable: true),
                     TokenValidBefore = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)

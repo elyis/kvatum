@@ -12,6 +12,7 @@ using KVATUM_CHATFLOW_SERVICE.Core.IService;
 using KVATUM_CHATFLOW_SERVICE.Infrastructure.Data;
 using KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository;
 using Swashbuckle.AspNetCore.Filters;
+using KVATUM_CHATFLOW_SERVICE.Infrastructure.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,6 +43,7 @@ void ConfigureServices(IServiceCollection services)
     var rabbitMqHostname = GetEnvVar("RABBITMQ_HOSTNAME");
     var rabbitMqUserName = GetEnvVar("RABBITMQ_USERNAME");
     var rabbitMqPassword = GetEnvVar("RABBITMQ_PASSWORD");
+    var updateHubIconQueue = GetEnvVar("RABBITMQ_HUB_ICON_QUEUE_NAME");
 
     services.AddControllers(e =>
     {
@@ -103,9 +105,23 @@ void ConfigureServices(IServiceCollection services)
     services.AddSingleton<IHashGenerator, HashGenerator>();
     services.AddSingleton<IJwtService, JwtService>();
 
+    services.AddSingleton<RabbitMqService>(provider =>
+        {
+            var scopeFactory = provider.GetRequiredService<IServiceScopeFactory>();
+            return new RabbitMqService(
+                scopeFactory,
+                rabbitMqHostname,
+                rabbitMqUserName,
+                rabbitMqPassword,
+                updateHubIconQueue
+            );
+        });
+
 
     services.AddScoped<IHubRepository, HubRepository>();
     services.AddScoped<IWorkspaceRepository, WorkspaceRepository>();
+
+    services.AddHostedService(provider => provider.GetRequiredService<RabbitMqService>());
 }
 
 void ConfigureMiddleware(WebApplication app)

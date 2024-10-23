@@ -37,6 +37,9 @@ builder.Logging.SetMinimumLevel(LogLevel.Error);
 
 var app = builder.Build();
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.UseHttpsRedirection();
 app.UseCors("AllowAllOrigins");
 
@@ -46,6 +49,5 @@ app.UseWebSockets();
 
 app.UseOcelot().Wait();
 
-app.MapGet("/", () => "Gateway works!");
 
 app.Run();

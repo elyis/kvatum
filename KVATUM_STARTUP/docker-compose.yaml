@@ -37,16 +37,16 @@ services:
       file: services/rabbitmq-service.yaml
       service: rabbitmq
 
-  # kvatum-file-service:
-  #   extends:
-  #     file: services/file-service.yaml
-  #     service: kvatum-file-server
+  kvatum-file-service:
+    extends:
+      file: services/file-service.yaml
+      service: kvatum-file-service
 
 
 volumes:
   kvatum-auth-data:
   kvatum-chat-flow-data:
 
-  kvatum-file-server-data:
+  kvatum-file-service-data:
   kvatum-rabbitmq:
   data-protection-keys:

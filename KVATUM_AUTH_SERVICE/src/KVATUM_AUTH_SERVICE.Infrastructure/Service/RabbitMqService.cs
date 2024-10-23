@@ -12,7 +12,6 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Service
 {
     public class RabbitMqService : BackgroundService
     {
-        private readonly INotifyService _notifyService;
         private IConnection _connection;
         private IModel _channel;
         private readonly IServiceScopeFactory _serviceFactory;
@@ -26,14 +25,12 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Service
             string hostname,
             string userName,
             string password,
-            string updateProfileQueue,
-            INotifyService notifyService)
+            string updateProfileQueue)
         {
             _hostname = hostname;
             _userName = userName;
             _password = password;
             _serviceFactory = serviceFactory;
-            _notifyService = notifyService;
 
             _updateProfileQueue = updateProfileQueue;
 

@@ -4,11 +4,7 @@ namespace KVATUM_AUTH_SERVICE.Core.Entities.Models
     {
         public Guid Id { get; set; }
         public string Ip { get; set; }
-        public string ClientId { get; set; }
-        public string OS { get; set; }
-        public string DeviceName { get; set; }
-        public string Model { get; set; }
-
+        public string UserAgent { get; set; }
         public Account Account { get; set; }
         public Guid AccountId { get; set; }
 

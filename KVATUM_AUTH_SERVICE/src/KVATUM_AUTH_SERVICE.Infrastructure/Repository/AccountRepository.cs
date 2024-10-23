@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using KVATUM_AUTH_SERVICE.Core.Entities.Models;
-using KVATUM_AUTH_SERVICE.Core.Entities.Request;
 using KVATUM_AUTH_SERVICE.Core.IRepository;
 using KVATUM_AUTH_SERVICE.Infrastructure.Data;
 
@@ -39,13 +38,11 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
             return result?.Entity;
         }
 
-        public async Task<AccountSession?> GetSessionAsync(Guid accountId, UserAgentDetails userAgentDetails, string ipAddress)
+        public async Task<AccountSession?> GetSessionAsync(Guid accountId, string userAgent, string ipAddress)
         {
             return await _context.AccountSessions
                 .FirstOrDefaultAsync(e => e.AccountId == accountId
-                                          && e.ClientId == userAgentDetails.ClientId
-                                          && e.DeviceName == userAgentDetails.DeviceName
-                                          && e.Model == userAgentDetails.Model
+                                          && e.UserAgent == userAgent
                                           && e.Ip == ipAddress);
         }
 
@@ -56,19 +53,16 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
                 .ToListAsync();
         }
 
-        public async Task<AccountSession> GetOrAddSessionAsync(UserAgentDetails userAgentDetails, string ipAddress, Account account)
+        public async Task<AccountSession> GetOrAddSessionAsync(string userAgent, string ipAddress, Account account)
         {
-            var session = await GetSessionAsync(account.Id, userAgentDetails, ipAddress);
+            var session = await GetSessionAsync(account.Id, userAgent, ipAddress);
             if (session != null)
                 return session;
 
             session = new AccountSession
             {
                 Account = account,
-                ClientId = userAgentDetails.ClientId,
-                OS = userAgentDetails.OS,
-                DeviceName = userAgentDetails.DeviceName,
-                Model = userAgentDetails.Model,
+                UserAgent = userAgent,
                 Ip = ipAddress
             };
 

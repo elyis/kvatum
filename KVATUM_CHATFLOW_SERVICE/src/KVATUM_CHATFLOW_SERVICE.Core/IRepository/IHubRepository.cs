@@ -14,6 +14,7 @@ namespace KVATUM_CHATFLOW_SERVICE.Core.IRepository
         Task<HubMember?> AddMemberToHubAsync(Guid hubId, Guid memberId);
         Task<bool> RemoveMemberFromHubAsync(Guid hubId, Guid memberId);
         Task<Hub?> UpdateHubAsync(Guid id, string name);
+        Task<Hub?> UpdateHubIconAsync(Guid id, string fileName);
         Task<bool> DeleteHubAsync(Guid id);
     }
 }

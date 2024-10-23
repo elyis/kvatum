@@ -68,8 +68,8 @@ namespace KVATUM_CHATFLOW_SERVICE.Api.Controllers
         }
 
         [HttpGet("hub/invitation"), Authorize]
-        [SwaggerOperation(Summary = "Получить ссылку на вступление в хаб", Description = "Получить ссылку на вступление в хаб")]
-        [SwaggerResponse(200, Description = "Успешное получение ссылки", Type = typeof(HubInvitationLinkBody))]
+        [SwaggerOperation(Summary = "Присоединиться к серверу", Description = "Присоединиться к серверу")]
+        [SwaggerResponse(200, Description = "Успешное ", Type = typeof(HubInvitationLinkBody))]
         [SwaggerResponse(404, Description = "Ссылка не найдена")]
         public async Task<IActionResult> GetHubInvitation(
             [FromHeader(Name = "Authorization")] string? token,

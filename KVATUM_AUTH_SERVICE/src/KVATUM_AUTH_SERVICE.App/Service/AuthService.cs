@@ -4,8 +4,6 @@ using KVATUM_AUTH_SERVICE.Core.Entities.Request;
 using KVATUM_AUTH_SERVICE.Core.Entities.Response;
 using KVATUM_AUTH_SERVICE.Core.IRepository;
 using KVATUM_AUTH_SERVICE.Core.IService;
-using DeviceDetectorNET;
-using DeviceDetectorNET.Cache;
 using Microsoft.Extensions.Logging;
 
 namespace KVATUM_AUTH_SERVICE.App.Service
@@ -173,25 +171,8 @@ namespace KVATUM_AUTH_SERVICE.App.Service
             if (account == null)
                 return null;
 
-            var deviceDetector = new DeviceDetector(userAgent);
-            deviceDetector.SetCache(new DictionaryCache());
-            deviceDetector.Parse();
-
-            var client = deviceDetector?.GetClient()?.Match;
-            var os = deviceDetector?.GetOs()?.Match;
-            var deviceName = deviceDetector?.GetDeviceName();
-            var model = deviceDetector?.GetModel();
-
-            var userAgentDetails = new UserAgentDetails
-            {
-                ClientId = client?.Type ?? "Unknown",
-                OS = os?.Name ?? "Unknown",
-                DeviceName = deviceName ?? "Unknown",
-                Model = model ?? "Unknown"
-            };
-
             var ip = string.IsNullOrEmpty(ipAddress) ? "Unknown" : ipAddress;
-            var session = await _accountRepository.GetOrAddSessionAsync(userAgentDetails, ip, account);
+            var session = await _accountRepository.GetOrAddSessionAsync(userAgent, ip, account);
             return session?.Id;
         }
 
