@@ -171,5 +171,16 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
             await _context.SaveChangesAsync();
             return account;
         }
+
+        public async Task<bool> RemoveSessionAsync(Guid sessionId)
+        {
+            var session = await GetSessionAsync(sessionId);
+            if (session == null)
+                return true;
+
+            _context.AccountSessions.Remove(session);
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }
