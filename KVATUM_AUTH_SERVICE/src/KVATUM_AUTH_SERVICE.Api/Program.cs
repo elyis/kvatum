@@ -143,6 +143,7 @@ void ConfigureServices(IServiceCollection services)
 
 
     services.AddScoped<IAuthService, AuthService>();
+    services.AddScoped<IAccountSessionService, AccountSessionService>();
     services.AddScoped<IAccountRepository, AccountRepository>();
     services.AddScoped<IUnverifiedAccountRepository, UnverifiedAccountRepository>();
 

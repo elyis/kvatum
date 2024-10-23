@@ -45,10 +45,12 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
                                           && e.Ip == ipAddress);
         }
 
-        public async Task<List<AccountSession>> GetSessionsAsync(Guid accountId)
+        public async Task<List<AccountSession>> GetSessionsAsync(Guid accountId, int limit, int offset)
         {
             return await _context.AccountSessions
                     .Where(e => e.AccountId == accountId)
+                    .Skip(offset)
+                    .Take(limit)
                 .ToListAsync();
         }
 

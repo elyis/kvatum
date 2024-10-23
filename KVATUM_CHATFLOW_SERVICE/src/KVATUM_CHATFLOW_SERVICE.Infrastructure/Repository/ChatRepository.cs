@@ -56,6 +56,21 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
             return true;
         }
 
+        public async Task<bool> DetachChatFromWorkspaceAsync(Guid chatId, Guid workspaceId)
+        {
+            var chat = await _context.Chats.Include(e => e.Workspaces)
+                                           .FirstOrDefaultAsync(e => e.Id == chatId);
+            if (chat == null)
+                return true;
+
+            if (!chat.Workspaces.Any(e => e.Id == workspaceId))
+                return true;
+
+            chat.Workspaces.Remove(chat.Workspaces.First(e => e.Id == workspaceId));
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<Chat?> GetChatAsync(Guid chatId)
         {
             return await _context.Chats.FirstOrDefaultAsync(e => e.Id == chatId);

@@ -12,5 +12,6 @@ namespace KVATUM_CHATFLOW_SERVICE.Core.IRepository
         Task<List<Chat>> GetChatsByWorkspaceIdAsync(Guid workspaceId);
         Task<List<WorkspaceChatsBody>> GetWorkspaceChatsAsync(IEnumerable<Guid> workspaceIds);
         Task<Chat?> AttachChatToWorkspaceAsync(Guid chatId, Workspace workspace);
+        Task<bool> DetachChatFromWorkspaceAsync(Guid chatId, Guid workspaceId);
     }
 }

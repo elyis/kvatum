@@ -1,3 +1,5 @@
+using KVATUM_AUTH_SERVICE.Core.Entities.Response;
+
 namespace KVATUM_AUTH_SERVICE.Core.Entities.Models
 {
     public class AccountSession
@@ -10,5 +12,15 @@ namespace KVATUM_AUTH_SERVICE.Core.Entities.Models
 
         public string? Token { get; set; }
         public DateTime? TokenValidBefore { get; set; }
+
+        public AccountSessionBody ToAccountSessionBody()
+        {
+            return new AccountSessionBody
+            {
+                Id = Id,
+                Ip = Ip,
+                UserAgent = UserAgent,
+            };
+        }
     }
 }

@@ -57,6 +57,34 @@
         },
 
         {
+            "DownstreamPathTemplate": "/api/session/{sessionId}",
+            "DangerousAcceptAnyServerCertificateValidator": true,
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-auth-service",
+                    "Port": 8888
+                }
+            ],
+            "UpstreamPathTemplate": "/api/session/{sessionId}",
+            "UpstreamHttpMethod": [ "DELETE" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/api/sessions",
+            "DangerousAcceptAnyServerCertificateValidator": true,
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-auth-service",
+                    "Port": 8888
+                }
+            ],
+            "UpstreamPathTemplate": "/api/sessions",
+            "UpstreamHttpMethod": [ "GET" ]
+        },
+
+        {
             "DownstreamPathTemplate": "/api/profile",
             "DangerousAcceptAnyServerCertificateValidator": true,
             "DownstreamScheme": "https",
@@ -156,6 +184,19 @@
             ],
             "UpstreamPathTemplate": "/api/chats",
             "UpstreamHttpMethod": [ "GET" ]
+        },
+
+         {
+            "DownstreamPathTemplate": "/api/chat/detach",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-chat-flow-service",
+                    "Port": 80
+                }
+            ],
+            "UpstreamPathTemplate": "/api/chat/detach",
+            "UpstreamHttpMethod": [ "DELETE" ]
         },
 
         {

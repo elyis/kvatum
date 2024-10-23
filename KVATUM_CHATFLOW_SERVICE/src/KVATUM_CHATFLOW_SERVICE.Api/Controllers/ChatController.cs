@@ -67,5 +67,23 @@ namespace KVATUM_CHATFLOW_SERVICE.Api.Controllers
             var chat = await _chatRepository.AttachChatToWorkspaceAsync(chatId, workspace);
             return Ok(chat?.ToChatBody());
         }
+
+        [HttpDelete("chat/detach"), Authorize]
+        [SwaggerOperation(Summary = "Открепить чат от workspace", Description = "Открепить чат от workspace")]
+        [SwaggerResponse(204, Description = "Успешное открепление чата")]
+        [SwaggerResponse(400, Description = "ChatId or WorkspaceId is not exist")]
+        public async Task<IActionResult> DetachChatFromWorkspaceAsync(Guid chatId, Guid workspaceId)
+        {
+            var workspace = await _workspaceRepository.GetWorkspaceAsync(workspaceId);
+            if (workspace == null)
+                return BadRequest("WorkspaceId is not exist");
+
+            await _chatRepository.DetachChatFromWorkspaceAsync(chatId, workspaceId);
+            return NoContent();
+        }
+
+
+
+
     }
 }

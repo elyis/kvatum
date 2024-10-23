@@ -8,12 +8,13 @@ namespace KVATUM_AUTH_SERVICE.Core.IRepository
         Task<AccountSession?> GetSessionAsync(Guid accountId, string userAgent, string ipAddress);
         Task<AccountSession?> GetSessionAsync(Guid sessionId);
         Task<AccountSession> GetOrAddSessionAsync(string userAgent, string ipAddress, Account account);
-        Task<List<AccountSession>> GetSessionsAsync(Guid accountId);
+        Task<List<AccountSession>> GetSessionsAsync(Guid accountId, int limit, int offset);
         Task<Account?> GetAccountByEmailOrNicknameAsync(string identifier);
         Task<Account?> UpdateAccountNicknameAsync(Guid accountId, string nickname);
         Task<Account?> GetAccountByNicknameAsync(string nickname);
         Task<List<Account>> GetAccountsByPatternNicknameAsync(string pattern, int limit, int offset);
         Task<Account?> GetAsync(Guid id);
+        Task<bool> RemoveSessionAsync(Guid sessionId);
         Task<List<Account>> GetAccountsAsync(List<string> emails);
         Task<List<Account>> GetAccountsAsync(IEnumerable<Guid> ids);
         Task<Account?> GetAsync(string email);
