@@ -9,8 +9,7 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
     {
         private readonly AuthDbContext _context;
 
-        public AccountRepository(
-            AuthDbContext context)
+        public AccountRepository(AuthDbContext context)
         {
             _context = context;
         }
@@ -133,12 +132,42 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
             return session.Token;
         }
 
-        public async Task<AccountSession?> GetSessionAsync(Guid sessionId) => await _context.AccountSessions.FirstOrDefaultAsync(e => e.Id == sessionId);
+        public async Task<AccountSession?> GetSessionAsync(Guid sessionId)
+        {
+            return await _context.AccountSessions.FirstOrDefaultAsync(e => e.Id == sessionId);
+        }
 
         public async Task<List<Account>> GetAccountsAsync(IEnumerable<Guid> ids)
         {
             return await _context.Accounts.Where(e => ids.Contains(e.Id))
                 .ToListAsync();
+        }
+
+        public async Task<Account?> GetAccountByEmailOrNicknameAsync(string identifier)
+        {
+            return await _context.Accounts.FirstOrDefaultAsync(e => e.Email == identifier || e.Nickname == identifier);
+        }
+
+        public async Task<Account?> GetAccountByNicknameAsync(string nickname)
+        {
+            return await _context.Accounts.FirstOrDefaultAsync(e => e.Nickname == nickname);
+        }
+
+        public async Task<List<Account>> GetAccountsByPatternNicknameAsync(string pattern, int limit, int offset)
+        {
+            return await _context.Accounts.Where(e => EF.Functions.Like(e.Nickname, $"%{pattern}%"))
+                .ToListAsync();
+        }
+
+        public async Task<Account?> UpdateAccountNicknameAsync(Guid accountId, string nickname)
+        {
+            var account = await _context.Accounts.FirstOrDefaultAsync(e => e.Id == accountId);
+            if (account == null)
+                return null;
+
+            account.Nickname = nickname;
+            await _context.SaveChangesAsync();
+            return account;
         }
     }
 }

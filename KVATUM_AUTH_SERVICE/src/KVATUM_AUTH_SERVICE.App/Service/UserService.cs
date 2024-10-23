@@ -9,8 +9,7 @@ namespace KVATUM_AUTH_SERVICE.App.Service
     {
         private readonly IAccountRepository _accountRepository;
 
-        public UserService(
-            IAccountRepository accountRepository)
+        public UserService(IAccountRepository accountRepository)
         {
             _accountRepository = accountRepository;
         }
@@ -34,49 +33,26 @@ namespace KVATUM_AUTH_SERVICE.App.Service
             };
         }
 
-        // public async Task<HttpStatusCode> ChangeAccountTag(Guid accountId, string tag)
-        // {
-        //     var account = await _accountRepository.GetAsync(accountId);
-        //     if (account == null)
-        //         return HttpStatusCode.NotFound;
-
-        //     account = await _accountRepository.UpdateAccountTagAsync(accountId, tag);
-        //     return account == null ? HttpStatusCode.BadRequest : HttpStatusCode.OK;
-        // }
-
-        // public async Task<ServiceResponse<ProfileBody>> GetProfileByTag(string tag)
-        // {
-        //     var account = await _accountRepository.GetAccountByTagAsync(tag);
-        //     if (account == null)
-        //         return new ServiceResponse<ProfileBody>
-        //         {
-        //             StatusCode = HttpStatusCode.NotFound,
-        //             IsSuccess = false,
-        //             Errors = new[] { "Account not found" }
-        //         };
-
-        //     return new ServiceResponse<ProfileBody>
-        //     {
-        //         StatusCode = HttpStatusCode.OK,
-        //         IsSuccess = true,
-        //         Body = account.ToProfileBody()
-        //     };
-        // }
-
-        // public async Task<ServiceResponse<IEnumerable<ProfileBody>>> GetAllProfilesByPatternTag(string patternTag)
-        // {
-        //     var accounts = await _accountRepository.GetAccountsByPatternAccountTag(patternTag);
-        //     return new ServiceResponse<IEnumerable<ProfileBody>>
-        //     {
-        //         StatusCode = HttpStatusCode.OK,
-        //         IsSuccess = true,
-        //         Body = accounts.Select(a => a.ToProfileBody())
-        //     };
-        // }
-
-        public async Task<ServiceResponse<ProfileBody>> GetProfile(string identifier)
+        public async Task<HttpStatusCode> ChangeAccountNickname(Guid accountId, string nickname)
         {
-            var account = await _accountRepository.GetAsync(identifier);
+            var account = await _accountRepository.GetAsync(accountId);
+            if (account == null)
+                return HttpStatusCode.NotFound;
+
+            if (account.Nickname == nickname)
+                return HttpStatusCode.OK;
+
+            var accountByNickname = await _accountRepository.GetAccountByNicknameAsync(nickname);
+            if (accountByNickname != null)
+                return HttpStatusCode.Conflict;
+
+            account = await _accountRepository.UpdateAccountNicknameAsync(accountId, nickname);
+            return account == null ? HttpStatusCode.BadRequest : HttpStatusCode.OK;
+        }
+
+        public async Task<ServiceResponse<ProfileBody>> GetProfileByNickname(string nickname)
+        {
+            var account = await _accountRepository.GetAccountByNicknameAsync(nickname);
             if (account == null)
                 return new ServiceResponse<ProfileBody>
                 {
@@ -93,15 +69,34 @@ namespace KVATUM_AUTH_SERVICE.App.Service
             };
         }
 
-        // public async Task<ServiceResponse<IEnumerable<ProfileBody>>> GetAllProfilesByPatternIdentifier(string patternIdentifier)
-        // {
-        //     var accounts = await _accountRepository.GetAccountsByPatternIdentifier(patternIdentifier);
-        //     return new ServiceResponse<IEnumerable<ProfileBody>>
-        //     {
-        //         StatusCode = HttpStatusCode.OK,
-        //         IsSuccess = true,
-        //         Body = accounts.Select(a => a.ToProfileBody())
-        //     };
-        // }
+        public async Task<ServiceResponse<IEnumerable<ProfileBody>>> GetAccountsByPatternNickname(string patternNickname, int limit, int offset)
+        {
+            var accounts = await _accountRepository.GetAccountsByPatternNicknameAsync(patternNickname, limit, offset);
+            return new ServiceResponse<IEnumerable<ProfileBody>>
+            {
+                StatusCode = HttpStatusCode.OK,
+                IsSuccess = true,
+                Body = accounts.Select(a => a.ToProfileBody())
+            };
+        }
+
+        public async Task<ServiceResponse<ProfileBody>> GetProfileByEmail(string email)
+        {
+            var account = await _accountRepository.GetAsync(email);
+            if (account == null)
+                return new ServiceResponse<ProfileBody>
+                {
+                    StatusCode = HttpStatusCode.NotFound,
+                    IsSuccess = false,
+                    Errors = new[] { "Account not found" }
+                };
+
+            return new ServiceResponse<ProfileBody>
+            {
+                StatusCode = HttpStatusCode.OK,
+                IsSuccess = true,
+                Body = account.ToProfileBody()
+            };
+        }
     }
 }

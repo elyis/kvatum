@@ -71,6 +71,20 @@
         },
 
         {
+            "DownstreamPathTemplate": "/api/profile/nickname",
+            "DangerousAcceptAnyServerCertificateValidator": true,
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-auth-service",
+                    "Port": 8888
+                }
+            ],
+            "UpstreamPathTemplate": "/api/profile/nickname",
+            "UpstreamHttpMethod": [ "PATCH", "GET" ]
+        },
+
+        {
             "DownstreamPathTemplate": "/api/user",
             "DangerousAcceptAnyServerCertificateValidator": true,
             "DownstreamScheme": "https",
@@ -81,6 +95,20 @@
                 }
             ],
             "UpstreamPathTemplate": "/api/user",
+            "UpstreamHttpMethod": [ "GET" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/api/users/nickname",
+            "DangerousAcceptAnyServerCertificateValidator": true,
+            "DownstreamScheme": "https",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-auth-service",
+                    "Port": 8888
+                }
+            ],
+            "UpstreamPathTemplate": "/api/users/nickname",
             "UpstreamHttpMethod": [ "GET" ]
         },
 

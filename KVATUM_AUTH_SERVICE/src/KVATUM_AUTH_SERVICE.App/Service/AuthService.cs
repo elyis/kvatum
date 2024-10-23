@@ -179,7 +179,7 @@ namespace KVATUM_AUTH_SERVICE.App.Service
         public async Task<HttpStatusCode> CreateUnverifiedAccount(SignUpBody body)
         {
             var verificationCode = CodeGeneratorService.GenerateCode();
-            var existingAccount = await _accountRepository.GetAsync(body.Email);
+            var existingAccount = await _accountRepository.GetAccountByEmailOrNicknameAsync(body.Email);
             if (existingAccount != null)
                 return HttpStatusCode.Conflict;
 

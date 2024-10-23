@@ -5,11 +5,10 @@ namespace KVATUM_AUTH_SERVICE.Core.IService
 {
     public interface IUserService
     {
-        Task<ServiceResponse<ProfileBody>> GetProfile(string identifier);
-        // Task<ServiceResponse<IEnumerable<ProfileBody>>> GetAllProfilesByPatternIdentifier(string patternIdentifier);
-        // Task<ServiceResponse<IEnumerable<ProfileBody>>> GetAllProfilesByPatternTag(string patternTag);
-        // Task<ServiceResponse<ProfileBody>> GetProfileByTag(string tag);
-        // Task<HttpStatusCode> ChangeAccountTag(Guid accountId, string tag);
+        Task<ServiceResponse<ProfileBody>> GetProfileByEmail(string email);
+        Task<ServiceResponse<IEnumerable<ProfileBody>>> GetAccountsByPatternNickname(string patternNickname, int limit, int offset);
+        Task<ServiceResponse<ProfileBody>> GetProfileByNickname(string nickname);
+        Task<HttpStatusCode> ChangeAccountNickname(Guid accountId, string nickname);
         Task<ServiceResponse<ProfileBody>> GetProfile(Guid accountId);
     }
 }
