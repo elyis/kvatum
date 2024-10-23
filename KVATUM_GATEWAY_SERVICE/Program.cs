@@ -38,7 +38,7 @@ builder.Logging.SetMinimumLevel(LogLevel.Error);
 var app = builder.Build();
 
 app.UseDefaultFiles();
-app.UseStaticFiles();
+app.UseStaticFiles("/swagger");
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAllOrigins");
