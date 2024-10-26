@@ -120,6 +120,11 @@ void ConfigureServices(IServiceCollection services)
 
     services.AddScoped<IHubRepository, HubRepository>();
     services.AddScoped<IWorkspaceRepository, WorkspaceRepository>();
+    services.AddScoped<IChatRepository, ChatRepository>();
+
+    services.AddScoped<IChatService, ChatService>();
+    services.AddScoped<IWorkspaceService, WorkspaceService>();
+    services.AddScoped<IHubService, HubService>();
 
     services.AddHostedService(provider => provider.GetRequiredService<RabbitMqService>());
 }

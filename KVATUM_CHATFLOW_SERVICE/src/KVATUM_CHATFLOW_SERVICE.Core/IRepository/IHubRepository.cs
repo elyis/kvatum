@@ -10,7 +10,7 @@ namespace KVATUM_CHATFLOW_SERVICE.Core.IRepository
         Task<HubJoiningInvitation?> AddHubJoiningInvitationAsync(Hub hub, string hashInvitation);
         Task<Hub?> GetHubByIdAsync(Guid id);
         Task<List<Hub>> GetHubsByConnectedAccountIdAsync(Guid connectedAccountId, int limit, int offset);
-        Task<Hub?> AddHubAsync(CreateHubBody body, Guid creatorId, string hashInvitation);
+        Task<Hub?> AddHubAsync(CreateHubBody body, Guid creatorId, string hashInvitation, string hexColor);
         Task<HubMember?> AddMemberToHubAsync(Guid hubId, Guid memberId);
         Task<bool> RemoveMemberFromHubAsync(Guid hubId, Guid memberId);
         Task<Hub?> UpdateHubAsync(Guid id, string name);

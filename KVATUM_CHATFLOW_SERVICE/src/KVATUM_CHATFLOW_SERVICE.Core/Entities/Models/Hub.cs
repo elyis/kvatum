@@ -9,6 +9,7 @@ namespace KVATUM_CHATFLOW_SERVICE.Core.Entities.Models
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string? Icon { get; set; }
+        public string HexColor { get; set; }
         public Guid CreatorId { get; set; }
         public List<Workspace> Workspaces { get; set; } = new();
         public List<HubMember> Members { get; set; } = new();
@@ -22,6 +23,7 @@ namespace KVATUM_CHATFLOW_SERVICE.Core.Entities.Models
             {
                 Id = Id,
                 Name = Name,
+                HexColor = $"#{HexColor}",
                 Images = urlIcon is null ? new() : new List<ImageWithResolutionBody>
                 {
                     new() { Resolution = ImageResolutions.Small, UrlImage = $"{urlIcon}?width=128&height=128" },

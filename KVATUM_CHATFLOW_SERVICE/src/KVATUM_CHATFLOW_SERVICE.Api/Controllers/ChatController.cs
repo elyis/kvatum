@@ -1,6 +1,6 @@
 using KVATUM_CHATFLOW_SERVICE.Core.Entities.Request;
 using KVATUM_CHATFLOW_SERVICE.Core.Entities.Response;
-using KVATUM_CHATFLOW_SERVICE.Core.IRepository;
+using KVATUM_CHATFLOW_SERVICE.Core.IService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
@@ -11,14 +11,10 @@ namespace KVATUM_CHATFLOW_SERVICE.Api.Controllers
     [Route("api")]
     public class ChatController : ControllerBase
     {
-        private readonly IChatRepository _chatRepository;
-        private readonly IWorkspaceRepository _workspaceRepository;
-        public ChatController(
-            IChatRepository chatRepository,
-            IWorkspaceRepository workspaceRepository)
+        private readonly IChatService _chatService;
+        public ChatController(IChatService chatService)
         {
-            _chatRepository = chatRepository;
-            _workspaceRepository = workspaceRepository;
+            _chatService = chatService;
         }
 
         [HttpGet("chats"), Authorize]
@@ -26,8 +22,11 @@ namespace KVATUM_CHATFLOW_SERVICE.Api.Controllers
         [SwaggerResponse(200, Description = "Успешное получение чатов", Type = typeof(List<WorkspaceChatsBody>))]
         public async Task<IActionResult> GetWorkspaceChatsAsync(List<Guid> workspaceIds)
         {
-            var chats = await _chatRepository.GetWorkspaceChatsAsync(workspaceIds);
-            return Ok(chats);
+            var response = await _chatService.GetWorkspaceChatsAsync(workspaceIds);
+            if (!response.IsSuccess)
+                return StatusCode((int)response.StatusCode, response.Errors);
+
+            return StatusCode((int)response.StatusCode, response.Body);
         }
 
         [HttpPost("chat"), Authorize]
@@ -36,12 +35,11 @@ namespace KVATUM_CHATFLOW_SERVICE.Api.Controllers
         [SwaggerResponse(400, Description = "WorkspaceId is not exist")]
         public async Task<IActionResult> CreateChatAsync(CreateChatBody body)
         {
-            var workspace = await _workspaceRepository.GetWorkspaceAsync(body.WorkspaceId);
-            if (workspace == null)
-                return BadRequest("WorkspaceId is not exist");
+            var response = await _chatService.CreateChatAsync(body);
+            if (!response.IsSuccess)
+                return StatusCode((int)response.StatusCode, response.Errors);
 
-            var chat = await _chatRepository.AddChatAsync(body.Name, body.Type, workspace);
-            return Ok(chat?.ToChatBody());
+            return StatusCode((int)response.StatusCode, response.Body);
         }
 
         [HttpDelete("chat"), Authorize]
@@ -50,8 +48,11 @@ namespace KVATUM_CHATFLOW_SERVICE.Api.Controllers
         [SwaggerResponse(400, Description = "ChatId is not exist")]
         public async Task<IActionResult> DeleteChatAsync(Guid chatId)
         {
-            await _chatRepository.DeleteChatAsync(chatId);
-            return NoContent();
+            var response = await _chatService.DeleteChatAsync(chatId);
+            if (!response.IsSuccess)
+                return StatusCode((int)response.StatusCode, response.Errors);
+
+            return StatusCode((int)response.StatusCode);
         }
 
         [HttpPost("chat/attach"), Authorize]
@@ -60,12 +61,11 @@ namespace KVATUM_CHATFLOW_SERVICE.Api.Controllers
         [SwaggerResponse(400, Description = "ChatId or WorkspaceId is not exist")]
         public async Task<IActionResult> AttachChatToWorkspaceAsync(Guid chatId, Guid workspaceId)
         {
-            var workspace = await _workspaceRepository.GetWorkspaceAsync(workspaceId);
-            if (workspace == null)
-                return BadRequest("WorkspaceId is not exist");
+            var response = await _chatService.AttachChatToWorkspaceAsync(chatId, workspaceId);
+            if (!response.IsSuccess)
+                return StatusCode((int)response.StatusCode, response.Errors);
 
-            var chat = await _chatRepository.AttachChatToWorkspaceAsync(chatId, workspace);
-            return Ok(chat?.ToChatBody());
+            return StatusCode((int)response.StatusCode, response.Body);
         }
 
         [HttpDelete("chat/detach"), Authorize]
@@ -74,16 +74,11 @@ namespace KVATUM_CHATFLOW_SERVICE.Api.Controllers
         [SwaggerResponse(400, Description = "ChatId or WorkspaceId is not exist")]
         public async Task<IActionResult> DetachChatFromWorkspaceAsync(Guid chatId, Guid workspaceId)
         {
-            var workspace = await _workspaceRepository.GetWorkspaceAsync(workspaceId);
-            if (workspace == null)
-                return BadRequest("WorkspaceId is not exist");
+            var response = await _chatService.DetachChatFromWorkspaceAsync(chatId, workspaceId);
+            if (!response.IsSuccess)
+                return StatusCode((int)response.StatusCode, response.Errors);
 
-            await _chatRepository.DetachChatFromWorkspaceAsync(chatId, workspaceId);
-            return NoContent();
+            return StatusCode((int)response.StatusCode);
         }
-
-
-
-
     }
 }

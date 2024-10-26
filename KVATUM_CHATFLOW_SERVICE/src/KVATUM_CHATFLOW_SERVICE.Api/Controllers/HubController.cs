@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using KVATUM_CHATFLOW_SERVICE.Core.Entities.Request;
 using KVATUM_CHATFLOW_SERVICE.Core.Entities.Response;
-using KVATUM_CHATFLOW_SERVICE.Core.IRepository;
 using KVATUM_CHATFLOW_SERVICE.Core.IService;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -12,17 +11,14 @@ namespace KVATUM_CHATFLOW_SERVICE.Api.Controllers
     [Route("api")]
     public class HubController : ControllerBase
     {
-        private readonly IHubRepository _hubRepository;
         private readonly IJwtService _jwtService;
-        private readonly IHashGenerator _hashGenerator;
+        private readonly IHubService _hubService;
         public HubController(
-            IHubRepository hubRepository,
-            IJwtService jwtService,
-            IHashGenerator hashGenerator)
+            IHubService hubService,
+            IJwtService jwtService)
         {
-            _hubRepository = hubRepository;
+            _hubService = hubService;
             _jwtService = jwtService;
-            _hashGenerator = hashGenerator;
         }
 
         [HttpPost("hub"), Authorize]
@@ -34,9 +30,11 @@ namespace KVATUM_CHATFLOW_SERVICE.Api.Controllers
             [FromBody] CreateHubBody body)
         {
             var tokenPayload = _jwtService.GetTokenPayload(token);
-            var hashInvitation = _hashGenerator.Compute();
-            var hub = await _hubRepository.AddHubAsync(body, tokenPayload.AccountId, hashInvitation);
-            return Ok(hub?.ToHubBody());
+            var result = await _hubService.CreateHubAsync(body, tokenPayload.AccountId);
+            if (!result.IsSuccess)
+                return StatusCode((int)result.StatusCode, result.Errors);
+
+            return StatusCode((int)result.StatusCode, result.Body);
         }
 
         [HttpGet("hubs/me"), Authorize]
@@ -49,8 +47,11 @@ namespace KVATUM_CHATFLOW_SERVICE.Api.Controllers
             [FromQuery] int offset = 0)
         {
             var tokenPayload = _jwtService.GetTokenPayload(token);
-            var hubs = await _hubRepository.GetHubsByConnectedAccountIdAsync(tokenPayload.AccountId, limit, offset);
-            return Ok(hubs.Select(e => e.ToHubBody()));
+            var result = await _hubService.GetConnectedHubsAsync(tokenPayload.AccountId, limit, offset);
+            if (!result.IsSuccess)
+                return StatusCode((int)result.StatusCode, result.Errors);
+
+            return StatusCode((int)result.StatusCode, result.Body);
         }
 
         [HttpGet("hub/link/{hubId}"), Authorize]
@@ -59,33 +60,27 @@ namespace KVATUM_CHATFLOW_SERVICE.Api.Controllers
         [SwaggerResponse(404, Description = "Ссылка не найдена")]
         public async Task<IActionResult> GetLinkToJoinHub([FromRoute] Guid hubId)
         {
-            var joiningInvitation = await _hubRepository.GetHubJoiningInvitationByHubIdAsync(hubId);
-            if (joiningInvitation == null)
-                return NotFound();
+            var result = await _hubService.GetHubJoiningInvitationByHubIdAsync(hubId);
+            if (!result.IsSuccess)
+                return StatusCode((int)result.StatusCode, result.Errors);
 
-            var link = Url.Action("GetHubInvitation", "Hub", new { hash = joiningInvitation.HashInvitation }, Request.Scheme);
-            return Ok(new HubInvitationLinkBody { Link = link });
+            return StatusCode((int)result.StatusCode, result.Body);
         }
 
-        [HttpGet("hub/invitation"), Authorize]
+        [HttpPost("hub/invitation"), Authorize]
         [SwaggerOperation(Summary = "Присоединиться к серверу", Description = "Присоединиться к серверу")]
-        [SwaggerResponse(200, Description = "Успешное ", Type = typeof(HubInvitationLinkBody))]
+        [SwaggerResponse(200, Description = "Успешное ")]
         [SwaggerResponse(404, Description = "Ссылка не найдена")]
         public async Task<IActionResult> GetHubInvitation(
-            [FromHeader(Name = "Authorization")] string? token,
+            [FromHeader(Name = "Authorization")] string token,
             [FromQuery] string hash)
         {
-            var hubInvitation = await _hubRepository.GetHubJoiningInvitationByHashAsync(hash);
-            if (hubInvitation == null)
-                return NotFound();
-
-            if (token == null)
-                return Unauthorized();
-
             var tokenPayload = _jwtService.GetTokenPayload(token);
-            await _hubRepository.AddMemberToHubAsync(hubInvitation.HubId, tokenPayload.AccountId);
+            var result = await _hubService.AddMemberToHubAsync(tokenPayload.AccountId, hash);
+            if (!result.IsSuccess)
+                return StatusCode((int)result.StatusCode, result.Errors);
 
-            return Ok();
+            return StatusCode((int)result.StatusCode);
         }
     }
 }

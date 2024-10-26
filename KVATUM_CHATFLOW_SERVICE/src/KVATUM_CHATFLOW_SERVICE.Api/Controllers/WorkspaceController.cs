@@ -12,16 +12,13 @@ namespace KVATUM_CHATFLOW_SERVICE.Api.Controllers
     [Route("api")]
     public class WorkspaceController : ControllerBase
     {
-        private readonly IWorkspaceRepository _workspaceRepository;
-        private readonly IHubRepository _hubRepository;
         private readonly IJwtService _jwtService;
+        private readonly IWorkspaceService _workspaceService;
         public WorkspaceController(
-            IWorkspaceRepository workspaceRepository,
-            IHubRepository hubRepository,
+            IWorkspaceService workspaceService,
             IJwtService jwtService)
         {
-            _workspaceRepository = workspaceRepository;
-            _hubRepository = hubRepository;
+            _workspaceService = workspaceService;
             _jwtService = jwtService;
         }
 
@@ -34,8 +31,11 @@ namespace KVATUM_CHATFLOW_SERVICE.Api.Controllers
             [FromQuery] int limit,
             [FromQuery] int offset)
         {
-            var workspaces = await _workspaceRepository.GetWorkspacesAsync(hubId, limit, offset);
-            return Ok(workspaces.Select(e => e.ToWorkspaceBody()));
+            var response = await _workspaceService.GetWorkspacesByHubIdAsync(hubId, limit, offset);
+            if (!response.IsSuccess)
+                return StatusCode((int)response.StatusCode, response.Errors);
+
+            return StatusCode((int)response.StatusCode, response.Body);
         }
 
         [HttpPost("workspace"), Authorize]
@@ -48,15 +48,11 @@ namespace KVATUM_CHATFLOW_SERVICE.Api.Controllers
             [FromHeader(Name = "Authorization")] string token)
         {
             var tokenPayload = _jwtService.GetTokenPayload(token);
-            var hub = await _hubRepository.GetHubByIdAsync(body.HubId);
-            if (hub == null)
-                return BadRequest("HubId is not exists");
+            var response = await _workspaceService.AddWorkspaceAsync(body, body.HubId, tokenPayload.AccountId);
+            if (!response.IsSuccess)
+                return StatusCode((int)response.StatusCode, response.Errors);
 
-            if (tokenPayload.AccountId != hub.CreatorId)
-                return Forbid();
-
-            var workspace = await _workspaceRepository.AddWorkspaceAsync(body.Name, hub);
-            return Ok(workspace?.ToWorkspaceBody());
+            return StatusCode((int)response.StatusCode, response.Body);
         }
 
         [HttpDelete("workspace"), Authorize]
@@ -69,19 +65,11 @@ namespace KVATUM_CHATFLOW_SERVICE.Api.Controllers
             [FromHeader(Name = "Authorization")] string token)
         {
             var tokenPayload = _jwtService.GetTokenPayload(token);
-            var workspace = await _workspaceRepository.GetWorkspaceAsync(workspaceId);
-            if (workspace == null)
-                return BadRequest("WorkspaceId is not exists");
+            var response = await _workspaceService.DeleteWorkspaceAsync(workspaceId, tokenPayload.AccountId);
+            if (!response.IsSuccess)
+                return StatusCode((int)response.StatusCode, response.Errors);
 
-            var hub = await _hubRepository.GetHubByIdAsync(workspace.HubId);
-            if (hub == null)
-                return BadRequest("HubId is not exists");
-
-            if (tokenPayload.AccountId != hub.CreatorId)
-                return Forbid();
-
-            await _workspaceRepository.DeleteWorkspaceAsync(workspaceId);
-            return Ok();
+            return StatusCode((int)response.StatusCode);
         }
     }
 }

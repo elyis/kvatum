@@ -29,14 +29,15 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
                 .ToListAsync();
         }
 
-        public async Task<Hub?> AddHubAsync(CreateHubBody body, Guid creatorId, string hashInvitation)
+        public async Task<Hub?> AddHubAsync(CreateHubBody body, Guid creatorId, string hashInvitation, string hexColor)
         {
             var hub = new Hub
             {
                 Name = body.Name,
                 CreatorId = creatorId,
                 Members = new List<HubMember> { new HubMember { MemberId = creatorId } },
-                HubJoiningInvitation = new HubJoiningInvitation { HashInvitation = hashInvitation }
+                HubJoiningInvitation = new HubJoiningInvitation { HashInvitation = hashInvitation },
+                HexColor = hexColor
             };
 
             var workspace = new Workspace
