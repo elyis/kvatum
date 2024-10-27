@@ -4,7 +4,6 @@ using KVATUM_CHATFLOW_SERVICE.Core.Entities.Events;
 using KVATUM_CHATFLOW_SERVICE.Core.IRepository;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 

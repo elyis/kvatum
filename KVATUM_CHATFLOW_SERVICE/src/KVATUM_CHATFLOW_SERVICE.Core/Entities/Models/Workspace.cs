@@ -21,6 +21,7 @@ namespace KVATUM_CHATFLOW_SERVICE.Core.Entities.Models
 
             return new WorkspaceBody
             {
+                Id = Id,
                 Name = Name,
                 HexColor = $"#{HexColor}",
                 ImageUrls = urlIcon is null ? new() : new List<ImageWithResolutionBody>
