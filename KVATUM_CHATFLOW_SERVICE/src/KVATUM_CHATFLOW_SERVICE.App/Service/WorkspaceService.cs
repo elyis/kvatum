@@ -38,7 +38,8 @@ namespace KVATUM_CHATFLOW_SERVICE.App.Service
                     Errors = new[] { "Not creator of hub" },
                 };
 
-            var workspace = await _workspaceRepository.AddWorkspaceAsync(body.Name, hub);
+            var hexColor = RandomColorGenerator.GetRandomColor();
+            var workspace = await _workspaceRepository.AddWorkspaceAsync(body.Name, hub, hexColor);
             if (workspace == null)
                 return new ServiceResponse<WorkspaceBody>
                 {

@@ -44,7 +44,7 @@ void ConfigureServices(IServiceCollection services)
     var rabbitMqUserName = GetEnvVar("RABBITMQ_USERNAME");
     var rabbitMqPassword = GetEnvVar("RABBITMQ_PASSWORD");
     var updateHubIconQueue = GetEnvVar("RABBITMQ_HUB_ICON_QUEUE_NAME");
-
+    var updateWorkspaceIconQueue = GetEnvVar("RABBITMQ_WORKSPACE_ICON_QUEUE_NAME");
     services.AddControllers(e =>
     {
         e.OutputFormatters.RemoveType<HttpNoContentOutputFormatter>();
@@ -113,7 +113,8 @@ void ConfigureServices(IServiceCollection services)
                 rabbitMqHostname,
                 rabbitMqUserName,
                 rabbitMqPassword,
-                updateHubIconQueue
+                updateHubIconQueue,
+                updateWorkspaceIconQueue
             );
         });
 

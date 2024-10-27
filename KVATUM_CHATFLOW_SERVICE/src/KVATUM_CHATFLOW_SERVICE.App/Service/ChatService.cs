@@ -95,7 +95,18 @@ namespace KVATUM_CHATFLOW_SERVICE.App.Service
             };
         }
 
-        public async Task<ServiceResponse<List<WorkspaceChatsBody>>> GetWorkspaceChatsAsync(List<Guid> workspaceIds)
+        public async Task<ServiceResponse<WorkspaceChatsBody>> GetChatsByWorkspaceAsync(Guid workspaceId)
+        {
+            var chats = await _chatRepository.GetWorkspaceChatsAsync(new[] { workspaceId });
+            return new ServiceResponse<WorkspaceChatsBody>
+            {
+                IsSuccess = true,
+                StatusCode = HttpStatusCode.OK,
+                Body = chats.FirstOrDefault(),
+            };
+        }
+
+        public async Task<ServiceResponse<List<WorkspaceChatsBody>>> GetChatsByWorkspacesAsync(List<Guid> workspaceIds)
         {
             var chats = await _chatRepository.GetWorkspaceChatsAsync(workspaceIds);
             return new ServiceResponse<List<WorkspaceChatsBody>>

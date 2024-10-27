@@ -27,6 +27,7 @@ void ConfigureServices(IServiceCollection services)
 
     var rabbitMqProfileImageQueue = GetEnvVar("RABBITMQ_PROFILE_IMAGE_QUEUE_NAME");
     var rabbitMqHubIconQueue = GetEnvVar("RABBITMQ_HUB_ICON_QUEUE_NAME");
+    var rabbitMqWorkspaceIconQueue = GetEnvVar("RABBITMQ_WORKSPACE_ICON_QUEUE_NAME");
 
     var jwtSecret = GetEnvVar("JWT_AUTH_SECRET");
     var jwtIssuer = GetEnvVar("JWT_AUTH_ISSUER");
@@ -69,7 +70,8 @@ void ConfigureServices(IServiceCollection services)
             rabbitMqUsername,
             rabbitMqPassword,
             rabbitMqProfileImageQueue,
-            rabbitMqHubIconQueue
+            rabbitMqHubIconQueue,
+            rabbitMqWorkspaceIconQueue
         ));
     services.AddSingleton(fileInspector);
 }

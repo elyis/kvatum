@@ -17,6 +17,7 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Service
         private readonly IServiceScopeFactory _serviceFactory;
         private readonly string _hostname;
         private readonly string _updateHubIconQueue;
+        private readonly string _updateWorkspaceIconQueue;
         private readonly string _userName;
         private readonly string _password;
 
@@ -25,7 +26,8 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Service
             string hostname,
             string userName,
             string password,
-            string updateHubIconQueue)
+            string updateHubIconQueue,
+            string updateWorkspaceIconQueue)
         {
             _hostname = hostname;
             _userName = userName;
@@ -33,7 +35,7 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Service
             _serviceFactory = serviceFactory;
 
             _updateHubIconQueue = updateHubIconQueue;
-
+            _updateWorkspaceIconQueue = updateWorkspaceIconQueue;
             InitializeRabbitMQ();
         }
 
@@ -79,22 +81,30 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Service
             stoppingToken.ThrowIfCancellationRequested();
 
             ConsumeQueue(_updateHubIconQueue, HandleUpdateHubIconMessageAsync);
-
+            ConsumeQueue(_updateWorkspaceIconQueue, HandleUpdateWorkspaceIconMessageAsync);
             await Task.CompletedTask;
         }
 
         private async Task HandleUpdateHubIconMessageAsync(string message)
         {
             using var scope = _serviceFactory.CreateScope();
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<RabbitMqService>>();
-            logger.LogInformation($"Message is {message}");
             var hubRepository = scope.ServiceProvider.GetRequiredService<IHubRepository>();
             var updateHubIconBody = JsonSerializer.Deserialize<HubIconUploadEvent>(message);
-            logger.LogInformation($"Serialize result: {updateHubIconBody}");
             if (updateHubIconBody == null)
                 return;
 
             await hubRepository.UpdateHubIconAsync(updateHubIconBody.HubId, updateHubIconBody.FileName);
+        }
+
+        private async Task HandleUpdateWorkspaceIconMessageAsync(string message)
+        {
+            using var scope = _serviceFactory.CreateScope();
+            var workspaceRepository = scope.ServiceProvider.GetRequiredService<IWorkspaceRepository>();
+            var updateWorkspaceIconBody = JsonSerializer.Deserialize<WorkspaceIconUploadEvent>(message);
+            if (updateWorkspaceIconBody == null)
+                return;
+
+            await workspaceRepository.UpdateWorkspaceIconAsync(updateWorkspaceIconBody.WorkspaceId, updateWorkspaceIconBody.FileName);
         }
 
         public override void Dispose()

@@ -18,11 +18,11 @@ namespace KVATUM_CHATFLOW_SERVICE.Api.Controllers
         }
 
         [HttpGet("chats"), Authorize]
-        [SwaggerOperation(Summary = "Получить чаты в workspace", Description = "Получить чаты в workspace")]
-        [SwaggerResponse(200, Description = "Успешное получение чатов", Type = typeof(List<WorkspaceChatsBody>))]
-        public async Task<IActionResult> GetWorkspaceChatsAsync(List<Guid> workspaceIds)
+        [SwaggerOperation(Summary = "Получить список чатов в workspace", Description = "Получить список чатов в workspace's")]
+        [SwaggerResponse(200, Description = "Успешное получение чатов", Type = typeof(WorkspaceChatsBody))]
+        public async Task<IActionResult> GetWorkspaceChatsAsync([FromQuery] Guid workspaceId)
         {
-            var response = await _chatService.GetWorkspaceChatsAsync(workspaceIds);
+            var response = await _chatService.GetChatsByWorkspaceAsync(workspaceId);
             if (!response.IsSuccess)
                 return StatusCode((int)response.StatusCode, response.Errors);
 

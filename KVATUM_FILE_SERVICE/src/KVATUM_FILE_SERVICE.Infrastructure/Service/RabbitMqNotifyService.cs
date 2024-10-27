@@ -14,13 +14,15 @@ namespace KVATUM_FILE_SERVICE.Infrastructure.Service
 
         private readonly string _profileImageQueue;
         private readonly string _hubIconQueue;
+        private readonly string _workspaceIconQueue;
 
         public RabbitMqNotifyService(
             string hostname,
             string username,
             string password,
             string profileImageQueue,
-            string hubIconQueue)
+            string hubIconQueue,
+            string workspaceIconQueue)
         {
             _hostname = hostname;
             _username = username;
@@ -28,6 +30,7 @@ namespace KVATUM_FILE_SERVICE.Infrastructure.Service
 
             _profileImageQueue = profileImageQueue;
             _hubIconQueue = hubIconQueue;
+            _workspaceIconQueue = workspaceIconQueue;
         }
 
         public void Publish<T>(T message, ContentUploaded content)
@@ -59,13 +62,11 @@ namespace KVATUM_FILE_SERVICE.Infrastructure.Service
                                  body: body);
         }
 
-        private string GetQueueName(ContentUploaded content)
+        private string GetQueueName(ContentUploaded content) => content switch
         {
-            return content switch
-            {
-                ContentUploaded.ProfileImage => _profileImageQueue,
-                ContentUploaded.HubIcon => _hubIconQueue,
-            };
-        }
+            ContentUploaded.ProfileImage => _profileImageQueue,
+            ContentUploaded.HubIcon => _hubIconQueue,
+            ContentUploaded.WorkspaceIcon => _workspaceIconQueue,
+        };
     }
 }

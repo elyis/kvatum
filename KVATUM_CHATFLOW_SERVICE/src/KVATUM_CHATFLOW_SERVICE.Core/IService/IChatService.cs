@@ -5,7 +5,8 @@ namespace KVATUM_CHATFLOW_SERVICE.Core.IService
 {
     public interface IChatService
     {
-        Task<ServiceResponse<List<WorkspaceChatsBody>>> GetWorkspaceChatsAsync(List<Guid> workspaceIds);
+        Task<ServiceResponse<List<WorkspaceChatsBody>>> GetChatsByWorkspacesAsync(List<Guid> workspaceIds);
+        Task<ServiceResponse<WorkspaceChatsBody>> GetChatsByWorkspaceAsync(Guid workspaceId);
         Task<ServiceResponse<ChatBody>> CreateChatAsync(CreateChatBody body);
         Task<ServiceResponse<bool>> DeleteChatAsync(Guid chatId);
         Task<ServiceResponse<ChatBody>> AttachChatToWorkspaceAsync(Guid chatId, Guid workspaceId);

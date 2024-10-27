@@ -14,12 +14,13 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
             _context = context;
         }
 
-        public async Task<Workspace?> AddWorkspaceAsync(string name, Hub hub)
+        public async Task<Workspace?> AddWorkspaceAsync(string name, Hub hub, string hexColor)
         {
             var workspace = new Workspace
             {
                 Name = name,
                 Hub = hub,
+                HexColor = hexColor
             };
 
             await _context.Workspaces.AddAsync(workspace);
@@ -50,6 +51,17 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
                                             .Skip(offset)
                                             .Take(limit)
                                             .ToListAsync();
+        }
+
+        public async Task<Workspace?> UpdateWorkspaceIconAsync(Guid id, string fileName)
+        {
+            var workspace = await GetWorkspaceAsync(id);
+            if (workspace == null)
+                return null;
+
+            workspace.Icon = fileName;
+            await _context.SaveChangesAsync();
+            return workspace;
         }
     }
 }
