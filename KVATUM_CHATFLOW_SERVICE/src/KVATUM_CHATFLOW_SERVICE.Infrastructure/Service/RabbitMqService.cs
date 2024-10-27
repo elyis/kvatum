@@ -52,6 +52,7 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Service
             _channel = _connection.CreateModel();
 
             DeclareQueue(_updateHubIconQueue);
+            DeclareQueue(_updateWorkspaceIconQueue);
         }
 
         private void DeclareQueue(string queueName)
