@@ -44,18 +44,24 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
             {
                 Name = body.Name,
                 Hub = hub,
+                HexColor = hexColor
             };
 
             var chats = new List<Chat>
             {
                 new() {
-                    Name = "General",
+                    Name = "Conference",
                     Type = ChatType.Conference.ToString()
                 },
 
                 new() {
-                    Name = "Live chat",
+                    Name = "Channel",
                     Type = ChatType.Channel.ToString()
+                },
+
+                new() {
+                    Name = "Chat",
+                    Type = ChatType.Chat.ToString()
                 }
             };
 
