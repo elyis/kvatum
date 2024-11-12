@@ -45,7 +45,10 @@ app.UseCors("AllowAllOrigins");
 
 app.UseRouting();
 app.UseAuthorization();
-app.UseWebSockets();
+app.UseWebSockets(new WebSocketOptions
+{
+    KeepAliveInterval = TimeSpan.FromSeconds(120),
+});
 
 app.UseOcelot().Wait();
 

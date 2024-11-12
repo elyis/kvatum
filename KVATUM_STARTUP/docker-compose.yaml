@@ -42,6 +42,11 @@ services:
       file: services/file-service.yaml
       service: kvatum-file-service
 
+  kvatum-streaming-service:
+    extends:
+      file: services/streaming-service.yaml
+      service: kvatum-streaming-service
+
 
 volumes:
   kvatum-auth-data:

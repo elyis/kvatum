@@ -274,7 +274,7 @@
                 }
             ],
             "UpstreamPathTemplate": "/api/hub/invitation",
-            "UpstreamHttpMethod": [ "GET" ]
+            "UpstreamHttpMethod": [ "POST" ]
         },
 
         {
@@ -407,6 +407,33 @@
             ],
             "UpstreamPathTemplate": "/api/images/profile/{everything}",
             "UpstreamHttpMethod": [ "GET" ]
+        },
+
+
+
+        {
+            "DownstreamPathTemplate": "/swagger/{everything}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-streaming-service",
+                    "Port": 80
+                }
+            ],
+            "UpstreamPathTemplate": "/streaming/swagger/{everything}",
+            "UpstreamHttpMethod": [ "GET" ]
+        },
+
+        {
+            "DownstreamPathTemplate": "/ws/rooms",
+            "DownstreamScheme": "ws",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "kvatum-streaming-service",
+                    "Port": 80
+                }
+            ],
+            "UpstreamPathTemplate": "/ws/rooms"
         }
     ]
 }

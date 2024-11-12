@@ -3,6 +3,7 @@ using KVATUM_CHATFLOW_SERVICE.Core.Entities.Request;
 using KVATUM_CHATFLOW_SERVICE.Core.Entities.Response;
 using KVATUM_CHATFLOW_SERVICE.Core.IRepository;
 using KVATUM_CHATFLOW_SERVICE.Core.IService;
+using Microsoft.Extensions.Logging;
 
 namespace KVATUM_CHATFLOW_SERVICE.App.Service
 {
@@ -10,12 +11,15 @@ namespace KVATUM_CHATFLOW_SERVICE.App.Service
     {
         private readonly IHubRepository _hubRepository;
         private readonly IHashGenerator _hashGenerator;
+        private readonly ILogger<HubService> _logger;
         public HubService(
             IHubRepository hubRepository,
-            IHashGenerator hashGenerator)
+            IHashGenerator hashGenerator,
+            ILogger<HubService> logger)
         {
             _hubRepository = hubRepository;
             _hashGenerator = hashGenerator;
+            _logger = logger;
         }
 
         public async Task<ServiceResponse<bool>> AddMemberToHubAsync(Guid memberId, string hash)

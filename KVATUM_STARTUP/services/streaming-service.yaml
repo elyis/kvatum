@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  kvatum-streaming-service:
+    image: kvatum-streaming-service
+    restart: always
+    ports:
+      - "8092:80"
+    environment:
+      - JWT_AUTH_SECRET=${JWT_AUTH_SECRET}
+      - JWT_AUTH_ISSUER=${JWT_AUTH_ISSUER}
+      - JWT_AUTH_AUDIENCE=${JWT_AUTH_AUDIENCE}
+
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
