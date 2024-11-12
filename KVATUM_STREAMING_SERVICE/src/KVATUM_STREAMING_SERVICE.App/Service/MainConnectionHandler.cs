@@ -81,7 +81,7 @@ namespace KVATUM_STREAMING_SERVICE.App.Service
             _roomConnectionService.JoinToRoom(roomConnectionBody.RoomId, accountId);
 
             var members = _roomConnectionService.GetRoomMembers(roomConnectionBody.RoomId).Where(m => m != accountId);
-            var connections = _mainConnectionService.GetConnections(members);
+            var connections = _mainConnectionService.GetConnections(members).Where(con => con.Id != accountId);
             var accountList = new AccountList
             {
                 EventType = MessageEvent.UserList,
