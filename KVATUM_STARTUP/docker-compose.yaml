@@ -12,6 +12,11 @@ services:
       file: services/email-service.yaml
       service: kvatum-email-service
 
+  kvatum-redis-service:
+    extends:
+      file: services/redis.yaml
+      service: kvatum-redis-service
+
   kvatum-auth-service:
     extends:
       file: services/auth-service.yaml
@@ -55,3 +60,4 @@ volumes:
   kvatum-file-service-data:
   kvatum-rabbitmq:
   data-protection-keys:
+  kvatum-redis:

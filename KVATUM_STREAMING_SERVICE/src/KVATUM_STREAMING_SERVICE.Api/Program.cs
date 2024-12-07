@@ -1,5 +1,7 @@
 using System.Text;
+using KVATUM_STREAMING_SERVICE.App.Handler;
 using KVATUM_STREAMING_SERVICE.App.Service;
+using KVATUM_STREAMING_SERVICE.Core.IHandler;
 using KVATUM_STREAMING_SERVICE.Core.IService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -16,7 +18,7 @@ ConfigureMiddleware(app);
 app.MapGet("/", () => $"Streaming server work");
 app.UseWebSockets(new WebSocketOptions
 {
-    KeepAliveInterval = TimeSpan.FromSeconds(120),
+    KeepAliveInterval = TimeSpan.Zero,
 });
 app.UseRouting();
 
@@ -31,6 +33,7 @@ void ConfigureServices(IServiceCollection services)
     var jwtAudience = GetEnvVar("JWT_AUTH_AUDIENCE");
 
     var corsAllowedOrigins = GetEnvVar("CORS_ALLOWED_ORIGINS");
+    var redisConnectionString = GetEnvVar("REDIS_CONNECTION_STRING");
 
     services.AddControllers(e =>
     {
@@ -65,18 +68,53 @@ void ConfigureServices(IServiceCollection services)
             ValidAudience = jwtAudience
         });
 
+    var accountServiceUrl = GetEnvVar("AUTH_SERVICE_BASE_URL");
+    services.AddHttpClient("AccountServiceClient", client =>
+    {
+        client.BaseAddress = new Uri(accountServiceUrl);
+        client.Timeout = TimeSpan.FromSeconds(30);
+    }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+    });
+
+    services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnectionString;
+        options.InstanceName = "kvatum";
+    });
+
+    services.AddDistributedMemoryCache();
+
     services.AddAuthorization();
-    services.AddSingleton<IMainConnectionService, MainConnectionService>();
     services.AddSingleton<IRoomConnectionService, RoomConnectionService>();
-    services.AddScoped<IMainConnectionHandler, MainConnectionHandler>();
+    services.AddSingleton<ISerializationService, SerializationService>();
     services.AddSingleton<IJwtService, JwtService>();
+    services.AddSingleton<IMainConnectionService, MainConnectionService>();
+    services.AddSingleton<IAccountService, AccountService>();
+
+    services.AddSingleton<IEventHandler, HandleAnswer>();
+    services.AddSingleton<IEventHandler, HandleChangeMicroState>();
+    services.AddSingleton<IEventHandler, HandleChangeVideoState>();
+    services.AddSingleton<IEventHandler, HandleDisconnect>();
+    services.AddSingleton<IEventHandler, HandleIceCandidate>();
+    services.AddSingleton<IEventHandler, HandleJoinToRoom>();
+    services.AddSingleton<IEventHandler, HandleOffer>();
+    services.AddSingleton<IEventHandler, HandleUpdateAnswer>();
+    services.AddSingleton<IEventHandler, HandleUpdateOffer>();
+    services.AddSingleton<IEventHandler, HandlePing>();
+    services.AddSingleton<ICacheService, CacheService>();
+
+    services.AddSingleton<IMessageHandler, MessageHandler>();
+
+    services.AddScoped<IMainConnectionHandler, MainConnectionHandler>();
 
     ConfigureSwagger(services);
 }
 
 void ConfigureMiddleware(WebApplication app)
 {
-    // app.UseCors();
+    app.UseCors();
     if (app.Environment.IsDevelopment())
     {
         app.UseDeveloperExceptionPage();

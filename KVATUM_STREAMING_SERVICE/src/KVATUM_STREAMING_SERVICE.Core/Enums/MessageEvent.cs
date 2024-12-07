@@ -15,6 +15,8 @@ namespace KVATUM_STREAMING_SERVICE.Core.Enums
         IceCandidate,
         Answer,
         UpdateAnswer,
-        Disconnect
+        Disconnect,
+        Ping,
+        Pong
     }
 }

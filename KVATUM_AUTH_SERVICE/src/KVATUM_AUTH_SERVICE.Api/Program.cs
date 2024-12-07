@@ -14,6 +14,7 @@ using KVATUM_AUTH_SERVICE.Core.IService;
 using KVATUM_AUTH_SERVICE.App.Service;
 using KVATUM_AUTH_SERVICE.Core.IRepository;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 var host = GetEnvVar("HOST");
@@ -58,9 +59,17 @@ void ConfigureServices(IServiceCollection services)
     var profileImageQueueName = GetEnvVar("RABBITMQ_PROFILE_IMAGE_QUEUE_NAME");
     var sendConfirmationCodeQueueName = GetEnvVar("RABBITMQ_SEND_CONFIRMATION_CODE_QUEUE_NAME");
 
+    var redisConnectionString = GetEnvVar("REDIS_CONNECTION_STRING");
+
     services.AddControllers(e =>
     {
         e.OutputFormatters.RemoveType<HttpNoContentOutputFormatter>();
+    });
+
+    services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnectionString;
+        options.InstanceName = "kvatum";
     });
 
     services.AddCors(setup =>
@@ -113,6 +122,7 @@ void ConfigureServices(IServiceCollection services)
         {
             builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
         });
+        options.LogTo(Console.WriteLine, LogLevel.Warning);
     });
 
     services.AddSingleton<IHashPasswordService, HashPasswordService>(sp => new HashPasswordService(passwordHashKey));
@@ -146,6 +156,8 @@ void ConfigureServices(IServiceCollection services)
     services.AddScoped<IAccountSessionService, AccountSessionService>();
     services.AddScoped<IAccountRepository, AccountRepository>();
     services.AddScoped<IUnverifiedAccountRepository, UnverifiedAccountRepository>();
+
+    services.AddSingleton<ICacheService, CacheService>();
 
     services.AddHostedService(provider => provider.GetRequiredService<RabbitMqService>());
 }

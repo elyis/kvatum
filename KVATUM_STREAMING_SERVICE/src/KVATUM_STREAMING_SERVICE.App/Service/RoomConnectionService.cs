@@ -14,7 +14,7 @@ namespace KVATUM_STREAMING_SERVICE.App.Service
             _logger = logger;
         }
 
-        public void JoinToRoom(Guid roomId, Guid accountId)
+        public IEnumerable<Guid> JoinToRoomAndGetMembers(Guid roomId, Guid accountId)
         {
             if (!_rooms.ContainsKey(roomId))
                 _rooms[roomId] = new HashSet<Guid>();
@@ -22,6 +22,7 @@ namespace KVATUM_STREAMING_SERVICE.App.Service
             _rooms[roomId].Add(accountId);
 
             _logger.LogInformation($"Account {accountId} joined to room {roomId}");
+            return _rooms[roomId];
         }
 
         public HashSet<Guid> GetRoomMembers(Guid roomId)

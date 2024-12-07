@@ -2,6 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using KVATUM_AUTH_SERVICE.Core.Entities.Models;
 using KVATUM_AUTH_SERVICE.Core.IRepository;
 using KVATUM_AUTH_SERVICE.Infrastructure.Data;
+using KVATUM_AUTH_SERVICE.Core.IService;
+using Microsoft.Extensions.Logging;
+using KVATUM_AUTH_SERVICE.Core.Entities.Cache;
+using System.Text.Json;
 
 namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
 {
@@ -9,18 +13,28 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
     {
         private readonly AuthDbContext _context;
 
-        public AccountRepository(AuthDbContext context)
+        private readonly ILogger<AccountRepository> _logger;
+        private readonly string _cacheAccountKeyPrefix = "account:";
+        private readonly string _cacheAccountSessionKeyPrefix = "session:";
+        private readonly ICacheService _cacheService;
+
+        public AccountRepository(
+            AuthDbContext context,
+            ILogger<AccountRepository> logger,
+            ICacheService cacheService)
         {
             _context = context;
+            _logger = logger;
+            _cacheService = cacheService;
         }
 
-        public async Task<Account?> AddAsync(
+        public async Task<CachedAccount?> AddAsync(
             string identifier,
             string nickname,
             string password,
             string role)
         {
-            var account = await GetAsync(identifier);
+            var account = await _context.Accounts.FirstOrDefaultAsync(e => e.Email == identifier);
             if (account != null)
                 return null;
 
@@ -32,9 +46,15 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
                 Role = role,
             };
 
-            var result = await _context.Accounts.AddAsync(account);
+            account = (await _context.Accounts.AddAsync(account))?.Entity;
             await _context.SaveChangesAsync();
-            return result?.Entity;
+
+            var cachedAccount = account?.ToCachedAccount();
+            if (cachedAccount == null)
+                return null;
+
+            await CacheAccount(cachedAccount, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(4));
+            return cachedAccount;
         }
 
         public async Task<AccountSession?> GetSessionAsync(Guid accountId, string userAgent, string ipAddress)
@@ -54,11 +74,15 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
                 .ToListAsync();
         }
 
-        public async Task<AccountSession> GetOrAddSessionAsync(string userAgent, string ipAddress, Account account)
+        public async Task<CachedAccountSession?> GetOrAddSessionAsync(string userAgent, string ipAddress, Guid accountId)
         {
-            var session = await GetSessionAsync(account.Id, userAgent, ipAddress);
+            var account = await _context.Accounts.FirstOrDefaultAsync(e => e.Id == accountId);
+            if (account == null)
+                return null;
+
+            var session = await GetSessionAsync(accountId, userAgent, ipAddress);
             if (session != null)
-                return session;
+                return session.ToCachedAccountSession();
 
             session = new AccountSession
             {
@@ -67,10 +91,15 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
                 Ip = ipAddress
             };
 
-            var result = await _context.AccountSessions.AddAsync(session);
+            var result = (await _context.AccountSessions.AddAsync(session))?.Entity;
             await _context.SaveChangesAsync();
 
-            return result?.Entity;
+            var cachedSession = result?.ToCachedAccountSession();
+            if (cachedSession == null)
+                return null;
+
+            await CacheAccountSession(cachedSession, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(4));
+            return cachedSession;
         }
 
 
@@ -81,20 +110,42 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
             return result;
         }
 
-        public async Task<Account?> GetAsync(Guid id)
-            => await _context.Accounts
-                .FirstOrDefaultAsync(e => e.Id == id);
-
-        public async Task<Account?> GetAsync(string identifier)
+        public async Task<CachedAccount?> GetAsync(Guid id)
         {
-            return await _context.Accounts
-                .FirstOrDefaultAsync(e => e.Email == identifier);
+            var cachedAccount = await GetFromCacheAsync<CachedAccount>($"{_cacheAccountKeyPrefix}{id}");
+            if (cachedAccount != null)
+                return cachedAccount;
+
+            var account = await _context.Accounts.FirstOrDefaultAsync(e => e.Id == id);
+            if (account == null)
+                return null;
+
+            cachedAccount = account.ToCachedAccount();
+            await CacheAccount(cachedAccount, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(4));
+            return cachedAccount;
+        }
+
+        public async Task<CachedAccount?> GetAsync(string email)
+        {
+            var cachedAccount = await GetFromCacheAsync<CachedAccount>($"{_cacheAccountKeyPrefix}{email}");
+            if (cachedAccount != null)
+                return cachedAccount;
+
+            var account = await _context.Accounts.FirstOrDefaultAsync(e => e.Email == email);
+            if (account == null)
+                return null;
+
+            cachedAccount = account.ToCachedAccount();
+            await CacheAccount(cachedAccount, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(4));
+            return cachedAccount;
         }
 
         public async Task<AccountSession?> GetSessionByTokenAndAccount(string refreshTokenHash)
-            => await _context.AccountSessions
-            .Include(e => e.Account)
-            .FirstOrDefaultAsync(e => e.Token == refreshTokenHash);
+        {
+            return await _context.AccountSessions
+                    .Include(e => e.Account)
+                    .FirstOrDefaultAsync(e => e.Token == refreshTokenHash);
+        }
 
         public async Task<List<Account>> GetAccountsByPatternIdentifier(string identifier)
         {
@@ -104,39 +155,54 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
         }
 
 
-        public async Task<Account?> UpdateProfileIconAsync(Guid accountId, string filename)
+        public async Task<CachedAccount?> UpdateProfileIconAsync(Guid accountId, string filename)
         {
-            var account = await GetAsync(accountId);
+            var account = await _context.Accounts.FirstOrDefaultAsync(e => e.Id == accountId);
             if (account == null)
                 return null;
 
             account.Image = filename;
             await _context.SaveChangesAsync();
-            return account;
+
+            var cachedAccount = account.ToCachedAccount();
+            await CacheAccount(cachedAccount, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(4));
+            return cachedAccount;
         }
 
         public async Task<string?> UpdateTokenAsync(string refreshToken, Guid sessionId, TimeSpan? duration = null)
         {
-            var session = await GetSessionAsync(sessionId);
+            var session = await _context.AccountSessions.FirstOrDefaultAsync(e => e.Id == sessionId);
             if (session == null)
                 return null;
 
             if (duration == null)
                 duration = TimeSpan.FromDays(1);
 
-            if (session.TokenValidBefore <= DateTime.UtcNow || session.TokenValidBefore == null)
+            if (session.TokenValidBefore == null || session.TokenValidBefore <= DateTime.UtcNow)
             {
                 session.TokenValidBefore = DateTime.UtcNow.Add((TimeSpan)duration);
                 session.Token = refreshToken;
                 await _context.SaveChangesAsync();
+
+                await CacheAccountSession(session.ToCachedAccountSession(), TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(4));
             }
 
             return session.Token;
         }
 
-        public async Task<AccountSession?> GetSessionAsync(Guid sessionId)
+        public async Task<CachedAccountSession?> GetSessionAsync(Guid sessionId)
         {
-            return await _context.AccountSessions.FirstOrDefaultAsync(e => e.Id == sessionId);
+            var cachedAccountSession = await GetFromCacheAsync<CachedAccountSession>($"{_cacheAccountSessionKeyPrefix}{sessionId}");
+            if (cachedAccountSession != null)
+                return cachedAccountSession;
+
+            var session = await _context.AccountSessions.FirstOrDefaultAsync(e => e.Id == sessionId);
+            if (session == null)
+                return null;
+
+            cachedAccountSession = session.ToCachedAccountSession();
+            await CacheAccountSession(cachedAccountSession, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(4));
+            return cachedAccountSession;
         }
 
         public async Task<List<Account>> GetAccountsAsync(IEnumerable<Guid> ids)
@@ -145,23 +211,45 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
                 .ToListAsync();
         }
 
-        public async Task<Account?> GetAccountByEmailOrNicknameAsync(string identifier)
+        public async Task<CachedAccount?> GetAccountByEmailOrNicknameAsync(string identifier)
         {
-            return await _context.Accounts.FirstOrDefaultAsync(e => e.Email == identifier || e.Nickname == identifier);
+            var cachedAccount = await GetFromCacheAsync<CachedAccount>($"{_cacheAccountKeyPrefix}{identifier}");
+            if (cachedAccount != null)
+                return cachedAccount;
+
+            var account = await _context.Accounts.FirstOrDefaultAsync(e => e.Email == identifier || e.Nickname == identifier);
+            if (account == null)
+                return null;
+
+            cachedAccount = account.ToCachedAccount();
+            await CacheAccount(cachedAccount, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(4));
+            return cachedAccount;
         }
 
-        public async Task<Account?> GetAccountByNicknameAsync(string nickname)
+        public async Task<CachedAccount?> GetAccountByNicknameAsync(string nickname)
         {
-            return await _context.Accounts.FirstOrDefaultAsync(e => e.Nickname == nickname);
+            var cachedAccount = await GetFromCacheAsync<CachedAccount>($"{_cacheAccountKeyPrefix}{nickname}");
+            if (cachedAccount != null)
+                return cachedAccount;
+
+            var account = await _context.Accounts.FirstOrDefaultAsync(e => e.Nickname == nickname);
+            if (account == null)
+                return null;
+
+            cachedAccount = account.ToCachedAccount();
+            await CacheAccount(cachedAccount, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(4));
+            return cachedAccount;
         }
 
-        public async Task<List<Account>> GetAccountsByPatternNicknameAsync(string pattern, int limit, int offset)
+        public async Task<List<CachedAccount>> GetAccountsByPatternNicknameAsync(string pattern, int limit, int offset)
         {
-            return await _context.Accounts.Where(e => EF.Functions.Like(e.Nickname, $"%{pattern}%"))
+            var accounts = await _context.Accounts.Where(e => EF.Functions.Like(e.Nickname, $"%{pattern}%"))
                 .ToListAsync();
+
+            return accounts.Select(e => e.ToCachedAccount()).ToList();
         }
 
-        public async Task<Account?> UpdateAccountNicknameAsync(Guid accountId, string nickname)
+        public async Task<CachedAccount?> UpdateAccountNicknameAsync(Guid accountId, string nickname)
         {
             var account = await _context.Accounts.FirstOrDefaultAsync(e => e.Id == accountId);
             if (account == null)
@@ -169,18 +257,79 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
 
             account.Nickname = nickname;
             await _context.SaveChangesAsync();
-            return account;
+
+            var cachedAccount = account.ToCachedAccount();
+            await CacheAccount(cachedAccount, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(4));
+            return cachedAccount;
         }
 
         public async Task<bool> RemoveSessionAsync(Guid sessionId)
         {
-            var session = await GetSessionAsync(sessionId);
+            var session = await _context.AccountSessions.FirstOrDefaultAsync(e => e.Id == sessionId);
             if (session == null)
                 return true;
 
             _context.AccountSessions.Remove(session);
             await _context.SaveChangesAsync();
+
+            await RemoveFromCacheAsync(sessionId, session.Token);
             return true;
+        }
+
+        private async Task CacheAccount(CachedAccount cachedAccount, TimeSpan slidingExpiration, TimeSpan absoluteExpiration)
+        {
+            var mainKey = $"{_cacheAccountKeyPrefix}{cachedAccount.Id}";
+            await _cacheService.CacheSetAsync(mainKey, cachedAccount, slidingExpiration, absoluteExpiration);
+            await _cacheService.CacheSetAsync($"{_cacheAccountKeyPrefix}{cachedAccount.Email}", mainKey, slidingExpiration, absoluteExpiration);
+            await _cacheService.CacheSetAsync($"{_cacheAccountKeyPrefix}{cachedAccount.Nickname}", mainKey, slidingExpiration, absoluteExpiration);
+        }
+
+        private async Task CacheAccountSession(CachedAccountSession cachedAccountSession, TimeSpan slidingExpiration, TimeSpan absoluteExpiration)
+        {
+            var mainKey = $"{_cacheAccountSessionKeyPrefix}{cachedAccountSession.Id}";
+            await _cacheService.CacheSetAsync(mainKey, cachedAccountSession, slidingExpiration, absoluteExpiration);
+
+            if (cachedAccountSession.Token != null)
+                await _cacheService.CacheSetAsync($"{_cacheAccountSessionKeyPrefix}{cachedAccountSession.Token}", mainKey, slidingExpiration, absoluteExpiration);
+        }
+
+        private async Task<T?> GetFromCacheAsync<T>(string key)
+        {
+            var cachedEntity = await _cacheService.GetResponseCacheAsync(key);
+            if (cachedEntity == null)
+                return default;
+
+            _logger.LogInformation($"Cache value is ${cachedEntity.Value}");
+
+            if (cachedEntity.IsIndexKey)
+            {
+                var entity = await _cacheService.GetFromCacheAsync<T>(cachedEntity.Value);
+                return entity;
+            }
+
+            return JsonSerializer.Deserialize<T>(cachedEntity.Value);
+        }
+
+        private async Task RemoveFromCacheAsync(Guid sessionId, string? token)
+        {
+            await _cacheService.RemoveCacheAsync($"{_cacheAccountSessionKeyPrefix}{sessionId}");
+            if (token != null)
+                await _cacheService.RemoveCacheAsync($"{_cacheAccountSessionKeyPrefix}{token}");
+        }
+
+        private void AttachAccountEntityIfNotAttached(Account account)
+        {
+            if (!_context.Accounts.Local.Any(e => e.Id == account.Id))
+                _context.Accounts.Attach(account);
+        }
+
+        public async Task<CachedAccount?> AccountAuthAsync(string email, string passwordHash)
+        {
+            var account = await _context.Accounts.FirstOrDefaultAsync(e => e.Email == email && e.PasswordHash == passwordHash);
+            if (account == null)
+                return null;
+
+            return account.ToCachedAccount();
         }
     }
 }

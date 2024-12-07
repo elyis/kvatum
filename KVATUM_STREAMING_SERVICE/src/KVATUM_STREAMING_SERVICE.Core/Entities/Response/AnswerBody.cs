@@ -6,7 +6,7 @@ namespace KVATUM_STREAMING_SERVICE.Core.Entities.Response
     {
         public MessageEvent EventType { get; set; }
         public object Answer { get; set; }
-        public UserConnectionBody From { get; set; }
+        public AccountConnectionBody From { get; set; }
         public Guid To { get; set; }
     }
 }

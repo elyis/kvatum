@@ -16,7 +16,6 @@ namespace KVATUM_AUTH_SERVICE.App.Service
         private readonly IJwtService _jwtService;
         private readonly IHashPasswordService _hashPasswordService;
         private readonly INotifyService _notificationService;
-
         private readonly ILogger<AuthService> _logger;
 
         public AuthService
@@ -65,8 +64,6 @@ namespace KVATUM_AUTH_SERVICE.App.Service
             string userAgent,
             string ipAddress)
         {
-            _logger.LogInformation($"RegisterNewAccount: email: {body.Email}, userAgent: {userAgent}, ipAddress: {ipAddress}");
-
             var account = await _accountRepository.GetAsync(body.Email);
             if (account == null)
                 return new ServiceResponse<OutputAccountCredentialsBody>
@@ -77,13 +74,16 @@ namespace KVATUM_AUTH_SERVICE.App.Service
                 };
 
             var inputPasswordHash = _hashPasswordService.Compute(body.Password);
-            if (account.PasswordHash != inputPasswordHash)
+            account = await _accountRepository.AccountAuthAsync(body.Email, inputPasswordHash);
+            if (account == null)
+            {
                 return new ServiceResponse<OutputAccountCredentialsBody>
                 {
                     Errors = new string[] { "Password is not correct" },
                     IsSuccess = false,
                     StatusCode = HttpStatusCode.BadRequest
                 };
+            }
 
             var sessionId = await CreateOrGetSession(userAgent, ipAddress, account.Id);
             var outputAccountCredentials = await UpdateToken(account.Role, account.Id, sessionId.Value);
@@ -102,8 +102,6 @@ namespace KVATUM_AUTH_SERVICE.App.Service
             string ipAddress,
             string rolename)
         {
-            _logger.LogInformation($"RegisterNewAccount: email: {email}, userAgent: {userAgent}, ipAddress: {ipAddress}");
-
             var unverifiedAccount = await _unverifiedAccountRepository.GetAsync(email);
             if (unverifiedAccount == null)
             {
@@ -172,7 +170,7 @@ namespace KVATUM_AUTH_SERVICE.App.Service
                 return null;
 
             var ip = string.IsNullOrEmpty(ipAddress) ? "Unknown" : ipAddress;
-            var session = await _accountRepository.GetOrAddSessionAsync(userAgent, ip, account);
+            var session = await _accountRepository.GetOrAddSessionAsync(userAgent, ip, accountId);
             return session?.Id;
         }
 

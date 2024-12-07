@@ -1,3 +1,4 @@
+using KVATUM_AUTH_SERVICE.Core.Entities.Cache;
 using KVATUM_AUTH_SERVICE.Core.Entities.Response;
 
 namespace KVATUM_AUTH_SERVICE.Core.Entities.Models
@@ -20,6 +21,18 @@ namespace KVATUM_AUTH_SERVICE.Core.Entities.Models
                 Id = Id,
                 Ip = Ip,
                 UserAgent = UserAgent,
+            };
+        }
+
+        public CachedAccountSession ToCachedAccountSession()
+        {
+            return new CachedAccountSession
+            {
+                Id = Id,
+                Ip = Ip,
+                UserAgent = UserAgent,
+                AccountId = AccountId,
+                Token = Token,
             };
         }
     }
