@@ -4,9 +4,9 @@ namespace KVATUM_AUTH_SERVICE.Core.IService
 {
     public interface ICacheService
     {
-        Task CacheSetAsync<T>(string key, T data, TimeSpan slidingExpiration, TimeSpan absoluteExpiration);
-        Task<T?> GetFromCacheAsync<T>(string key);
+        Task SetAsync<T>(string key, T data, TimeSpan slidingExpiration, TimeSpan absoluteExpiration);
+        Task<T?> GetAsync<T>(string key);
         Task<ResponseCache?> GetResponseCacheAsync(string key);
-        Task RemoveCacheAsync(string key);
+        Task RemoveAsync(string key);
     }
 }

@@ -12,7 +12,7 @@ namespace KVATUM_AUTH_SERVICE.App.Service
     {
         private readonly IAccountRepository _accountRepository;
         private readonly IUnverifiedAccountRepository _unverifiedAccountRepository;
-
+        private readonly ISessionRepository _sessionRepository;
         private readonly IJwtService _jwtService;
         private readonly IHashPasswordService _hashPasswordService;
         private readonly INotifyService _notificationService;
@@ -22,6 +22,7 @@ namespace KVATUM_AUTH_SERVICE.App.Service
         (
             IAccountRepository accountRepository,
             IUnverifiedAccountRepository unverifiedAccountRepository,
+            ISessionRepository sessionRepository,
             IJwtService jwtService,
             IHashPasswordService hashPasswordService,
             INotifyService notificationService,
@@ -30,6 +31,7 @@ namespace KVATUM_AUTH_SERVICE.App.Service
         {
             _accountRepository = accountRepository;
             _unverifiedAccountRepository = unverifiedAccountRepository;
+            _sessionRepository = sessionRepository;
             _jwtService = jwtService;
             _hashPasswordService = hashPasswordService;
             _notificationService = notificationService;
@@ -38,7 +40,7 @@ namespace KVATUM_AUTH_SERVICE.App.Service
 
         public async Task<ServiceResponse<OutputAccountCredentialsBody>> RestoreAccessToken(string refreshToken)
         {
-            var session = await _accountRepository.GetSessionByTokenAndAccount(refreshToken);
+            var session = await _sessionRepository.GetSessionByTokenAndAccount(refreshToken);
             if (session == null)
             {
                 return new ServiceResponse<OutputAccountCredentialsBody>
@@ -159,7 +161,7 @@ namespace KVATUM_AUTH_SERVICE.App.Service
             };
 
             var accountCredentials = _jwtService.GenerateDefaultTokenPair(tokenPayload);
-            accountCredentials.RefreshToken = await _accountRepository.UpdateTokenAsync(accountCredentials.RefreshToken, tokenPayload.SessionId);
+            accountCredentials.RefreshToken = await _sessionRepository.UpdateTokenAsync(accountCredentials.RefreshToken, tokenPayload.SessionId);
             return accountCredentials;
         }
 
@@ -170,14 +172,14 @@ namespace KVATUM_AUTH_SERVICE.App.Service
                 return null;
 
             var ip = string.IsNullOrEmpty(ipAddress) ? "Unknown" : ipAddress;
-            var session = await _accountRepository.GetOrAddSessionAsync(userAgent, ip, accountId);
+            var session = await _sessionRepository.GetOrAddSessionAsync(userAgent, ip, accountId);
             return session?.Id;
         }
 
         public async Task<HttpStatusCode> CreateUnverifiedAccount(SignUpBody body)
         {
             var verificationCode = CodeGeneratorService.GenerateCode();
-            var existingAccount = await _accountRepository.GetAccountByEmailOrNicknameAsync(body.Email);
+            var existingAccount = await _accountRepository.GetAsync(body.Email);
             if (existingAccount != null)
                 return HttpStatusCode.Conflict;
 

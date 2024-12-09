@@ -7,7 +7,6 @@ namespace KVATUM_AUTH_SERVICE.Core.IRepository
     {
         Task<UnverifiedAccount?> AddAsync(SignUpBody body, string verificationCode);
         Task<UnverifiedAccount?> GetAsync(string email);
-        Task<bool> VerifyAsync(string email, string verificationCode);
         Task<bool> DeleteAsync(string email);
     }
 }

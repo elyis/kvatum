@@ -14,7 +14,7 @@ namespace KVATUM_AUTH_SERVICE.App.Service
             _cache = cache;
         }
 
-        public async Task CacheSetAsync<T>(string key, T data, TimeSpan slidingExpiration, TimeSpan absoluteExpiration)
+        public async Task SetAsync<T>(string key, T data, TimeSpan slidingExpiration, TimeSpan absoluteExpiration)
         {
             var options = new DistributedCacheEntryOptions
             {
@@ -25,13 +25,13 @@ namespace KVATUM_AUTH_SERVICE.App.Service
             await _cache.SetStringAsync(key, serializedData, options);
         }
 
-        public async Task<T?> GetFromCacheAsync<T>(string key)
+        public async Task<T?> GetAsync<T>(string key)
         {
             var cachedData = await _cache.GetStringAsync(key);
             return cachedData != null ? JsonSerializer.Deserialize<T>(cachedData) : default;
         }
 
-        public async Task RemoveCacheAsync(string key)
+        public async Task RemoveAsync(string key)
         {
             await _cache.RemoveAsync(key);
         }

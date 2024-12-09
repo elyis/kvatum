@@ -156,6 +156,7 @@ void ConfigureServices(IServiceCollection services)
     services.AddScoped<IAccountSessionService, AccountSessionService>();
     services.AddScoped<IAccountRepository, AccountRepository>();
     services.AddScoped<IUnverifiedAccountRepository, UnverifiedAccountRepository>();
+    services.AddScoped<ISessionRepository, SessionRepository>();
 
     services.AddSingleton<ICacheService, CacheService>();
 

@@ -7,16 +7,16 @@ namespace KVATUM_AUTH_SERVICE.App.Service
 {
     public class AccountSessionService : IAccountSessionService
     {
-        private readonly IAccountRepository _accountRepository;
+        private readonly ISessionRepository _sessionRepository;
 
-        public AccountSessionService(IAccountRepository accountRepository)
+        public AccountSessionService(ISessionRepository sessionRepository)
         {
-            _accountRepository = accountRepository;
+            _sessionRepository = sessionRepository;
         }
 
         public async Task<ServiceResponse<List<AccountSessionBody>>> GetAllAccountSessionsAsync(Guid accountId, int limit, int offset)
         {
-            var sessions = await _accountRepository.GetSessionsAsync(accountId, limit, offset);
+            var sessions = await _sessionRepository.GetSessionsAsync(accountId, limit, offset);
             return new ServiceResponse<List<AccountSessionBody>>
             {
                 IsSuccess = true,
@@ -27,11 +27,11 @@ namespace KVATUM_AUTH_SERVICE.App.Service
 
         public async Task<HttpStatusCode> RemoveSessionAsync(Guid sessionId, Guid accountId)
         {
-            var account = await _accountRepository.GetSessionAsync(sessionId);
+            var account = await _sessionRepository.GetSessionAsync(sessionId);
             if (account == null || account.AccountId != accountId)
                 return HttpStatusCode.Forbidden;
 
-            return await _accountRepository.RemoveSessionAsync(sessionId) ? HttpStatusCode.NoContent : HttpStatusCode.InternalServerError;
+            return await _sessionRepository.RemoveSessionAsync(sessionId) ? HttpStatusCode.NoContent : HttpStatusCode.InternalServerError;
         }
     }
 }
