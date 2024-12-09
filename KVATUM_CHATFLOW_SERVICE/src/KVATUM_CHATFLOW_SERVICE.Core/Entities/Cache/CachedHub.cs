@@ -1,24 +1,20 @@
-using KVATUM_CHATFLOW_SERVICE.Core.Entities.Cache;
 using KVATUM_CHATFLOW_SERVICE.Core.Entities.Response;
 using KVATUM_CHATFLOW_SERVICE.Core.Enums;
 
-namespace KVATUM_CHATFLOW_SERVICE.Core.Entities.Models
+namespace KVATUM_CHATFLOW_SERVICE.Core.Entities.Cache
 {
-    public class Hub
+    public class CachedHub
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
-        public string? Icon { get; set; }
+        public string? Image { get; set; }
         public string HexColor { get; set; }
         public Guid CreatorId { get; set; }
-        public List<Workspace> Workspaces { get; set; } = new();
-        public List<HubMember> Members { get; set; } = new();
-        public HubJoiningInvitation HubJoiningInvitation { get; set; }
-
 
         public HubBody ToHubBody()
         {
-            string? urlIcon = string.IsNullOrEmpty(Icon) ? null : $"{Constants.WebUrlToHubIcon}/{Icon}";
+            string? urlIcon = string.IsNullOrEmpty(Image) ? null : $"{Constants.WebUrlToHubIcon}/{Image}";
+
             return new HubBody
             {
                 Id = Id,
@@ -30,18 +26,6 @@ namespace KVATUM_CHATFLOW_SERVICE.Core.Entities.Models
                     new() { Resolution = ImageResolutions.Medium, UrlImage = $"{urlIcon}?width=256&height=256" },
                     new() { Resolution = ImageResolutions.Big, UrlImage = $"{urlIcon}?width=512&height=512" },
                 },
-            };
-        }
-
-        public CachedHub ToCachedHub()
-        {
-            return new CachedHub
-            {
-                Id = Id,
-                Name = Name,
-                HexColor = HexColor,
-                Image = Icon,
-                CreatorId = CreatorId,
             };
         }
     }

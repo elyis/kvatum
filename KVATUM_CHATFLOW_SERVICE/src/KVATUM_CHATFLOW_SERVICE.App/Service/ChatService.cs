@@ -29,7 +29,7 @@ namespace KVATUM_CHATFLOW_SERVICE.App.Service
                     Errors = new[] { "WorkspaceId is not exist" },
                 };
 
-            var chat = await _chatRepository.AttachChatToWorkspaceAsync(chatId, workspace);
+            var chat = await _chatRepository.AttachChatToWorkspaceAsync(chatId, workspace.Id);
             return new ServiceResponse<ChatBody>
             {
                 IsSuccess = true,
@@ -49,7 +49,7 @@ namespace KVATUM_CHATFLOW_SERVICE.App.Service
                     Errors = new[] { "WorkspaceId is not exist" },
                 };
 
-            var chat = await _chatRepository.AddChatAsync(body.Name, body.Type, workspace);
+            var chat = await _chatRepository.AddChatAsync(body.Name, body.Type, workspace.Id);
             if (chat == null)
                 return new ServiceResponse<ChatBody>
                 {

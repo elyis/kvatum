@@ -1,23 +1,19 @@
-using KVATUM_CHATFLOW_SERVICE.Core.Entities.Cache;
 using KVATUM_CHATFLOW_SERVICE.Core.Entities.Response;
 using KVATUM_CHATFLOW_SERVICE.Core.Enums;
 
-namespace KVATUM_CHATFLOW_SERVICE.Core.Entities.Models
+namespace KVATUM_CHATFLOW_SERVICE.Core.Entities.Cache
 {
-    public class Workspace
+    public class CachedWorkspace
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string HexColor { get; set; }
-        public string? Icon { get; set; }
-
-        public List<Chat> Chats { get; set; } = new();
+        public string? Image { get; set; }
         public Guid HubId { get; set; }
-        public Hub Hub { get; set; }
 
         public WorkspaceBody ToWorkspaceBody()
         {
-            string? urlIcon = string.IsNullOrEmpty(Icon) ? null : $"{Constants.WebUrlToWorkspaceIcon}/{Icon}";
+            string? urlIcon = string.IsNullOrEmpty(Image) ? null : $"{Constants.WebUrlToWorkspaceIcon}/{Image}";
 
             return new WorkspaceBody
             {
@@ -30,18 +26,6 @@ namespace KVATUM_CHATFLOW_SERVICE.Core.Entities.Models
                     new() { Resolution = ImageResolutions.Medium, UrlImage = $"{urlIcon}?width=256&height=256" },
                     new() { Resolution = ImageResolutions.Big, UrlImage = $"{urlIcon}?width=512&height=512" },
                 },
-            };
-        }
-
-        public CachedWorkspace ToCachedWorkspace()
-        {
-            return new CachedWorkspace
-            {
-                Id = Id,
-                Name = Name,
-                HexColor = HexColor,
-                Image = Icon,
-                HubId = HubId,
             };
         }
     }

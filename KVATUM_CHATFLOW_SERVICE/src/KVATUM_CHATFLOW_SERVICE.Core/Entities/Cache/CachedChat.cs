@@ -1,16 +1,13 @@
-using KVATUM_CHATFLOW_SERVICE.Core.Entities.Cache;
 using KVATUM_CHATFLOW_SERVICE.Core.Entities.Response;
 using KVATUM_CHATFLOW_SERVICE.Core.Enums;
 
-namespace KVATUM_CHATFLOW_SERVICE.Core.Entities.Models
+namespace KVATUM_CHATFLOW_SERVICE.Core.Entities.Cache
 {
-    public class Chat
+    public class CachedChat
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string Type { get; set; }
-
-        public List<Workspace> Workspaces { get; set; } = new();
 
         public ChatBody ToChatBody()
         {
@@ -19,16 +16,6 @@ namespace KVATUM_CHATFLOW_SERVICE.Core.Entities.Models
                 Id = Id,
                 Name = Name,
                 Type = Enum.Parse<ChatType>(Type)
-            };
-        }
-
-        public CachedChat ToCachedChat()
-        {
-            return new CachedChat
-            {
-                Id = Id,
-                Name = Name,
-                Type = Type
             };
         }
     }

@@ -45,6 +45,8 @@ void ConfigureServices(IServiceCollection services)
     var rabbitMqPassword = GetEnvVar("RABBITMQ_PASSWORD");
     var updateHubIconQueue = GetEnvVar("RABBITMQ_HUB_ICON_QUEUE_NAME");
     var updateWorkspaceIconQueue = GetEnvVar("RABBITMQ_WORKSPACE_ICON_QUEUE_NAME");
+
+    var redisConnectionString = GetEnvVar("REDIS_CONNECTION_STRING");
     services.AddControllers(e =>
     {
         e.OutputFormatters.RemoveType<HttpNoContentOutputFormatter>();
@@ -82,6 +84,12 @@ void ConfigureServices(IServiceCollection services)
             ValidAudience = jwtAudience
         });
 
+    services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnectionString;
+        options.InstanceName = "kvatum";
+    });
+
     services.AddDistributedMemoryCache();
     services.AddSession(options =>
     {
@@ -104,6 +112,7 @@ void ConfigureServices(IServiceCollection services)
 
     services.AddSingleton<IHashGenerator, HashGenerator>();
     services.AddSingleton<IJwtService, JwtService>();
+    services.AddSingleton<ICacheService, CacheService>();
 
     services.AddSingleton<RabbitMqService>(provider =>
         {

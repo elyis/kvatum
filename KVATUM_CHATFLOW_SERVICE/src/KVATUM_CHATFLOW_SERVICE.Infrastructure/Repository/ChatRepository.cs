@@ -1,7 +1,9 @@
+using KVATUM_CHATFLOW_SERVICE.Core.Entities.Cache;
 using KVATUM_CHATFLOW_SERVICE.Core.Entities.Models;
 using KVATUM_CHATFLOW_SERVICE.Core.Entities.Response;
 using KVATUM_CHATFLOW_SERVICE.Core.Enums;
 using KVATUM_CHATFLOW_SERVICE.Core.IRepository;
+using KVATUM_CHATFLOW_SERVICE.Core.IService;
 using KVATUM_CHATFLOW_SERVICE.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,13 +12,18 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
     public class ChatRepository : IChatRepository
     {
         private readonly ServerFlowDbContext _context;
+        private readonly ICacheService _cacheService;
+        private readonly string _cacheChatKeyPrefix = "chat:";
 
-        public ChatRepository(ServerFlowDbContext context)
+        public ChatRepository(
+            ServerFlowDbContext context,
+            ICacheService cacheService)
         {
             _context = context;
+            _cacheService = cacheService;
         }
 
-        public async Task<Chat?> AddChatAsync(string name, ChatType type, Workspace workspace)
+        public async Task<CachedChat?> AddChatAsync(string name, ChatType type, Guid workspaceId)
         {
             var chat = new Chat
             {
@@ -24,35 +31,54 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
                 Type = type.ToString(),
             };
 
-            workspace.Chats.Add(chat);
+            var workspaceChat = new WorkspaceChat
+            {
+                WorkspaceId = workspaceId,
+                ChatId = chat.Id,
+            };
+
+            await _context.WorkspaceChats.AddAsync(workspaceChat);
             await _context.SaveChangesAsync();
-            return chat;
+            await CacheChat(chat);
+            return chat.ToCachedChat();
         }
 
-        public async Task<Chat?> AttachChatToWorkspaceAsync(Guid chatId, Workspace workspace)
+        public async Task<Chat?> AttachChatToWorkspaceAsync(Guid chatId, Guid workspaceId)
         {
-            var chat = await _context.Chats.Include(e => e.Workspaces)
-                                           .FirstOrDefaultAsync(e => e.Id == chatId);
-            if (chat == null)
+            var workspace = await _context.Workspaces.FirstOrDefaultAsync(e => e.Id == workspaceId);
+            if (workspace == null)
                 return null;
 
-            if (chat.Workspaces.Any(e => e.Id == workspace.Id))
-                return chat;
+            var workspaceChat = await _context.WorkspaceChats.Include(e => e.Chat)
+                                                            .FirstOrDefaultAsync(e => e.ChatId == chatId && e.WorkspaceId == workspaceId);
+            if (workspaceChat != null)
+                return workspaceChat.Chat;
 
-            workspace.Chats.Add(chat);
+            workspaceChat = new WorkspaceChat
+            {
+                WorkspaceId = workspaceId,
+                ChatId = chatId,
+            };
+
+            _context.WorkspaceChats.Add(workspaceChat);
             await _context.SaveChangesAsync();
-            return chat;
-
+            return workspaceChat.Chat;
         }
 
         public async Task<bool> DeleteChatAsync(Guid chatId)
         {
-            var chat = await _context.Chats.FirstOrDefaultAsync(e => e.Id == chatId);
-            if (chat == null)
-                return true;
+            var cachedChat = await _cacheService.GetAsync<CachedChat>($"{_cacheChatKeyPrefix}{chatId}");
+            var chat = new Chat { Id = chatId };
+            if (cachedChat == null)
+            {
+                chat = await _context.Chats.FirstOrDefaultAsync(e => e.Id == chatId);
+                if (chat == null)
+                    return true;
+            }
 
             _context.Chats.Remove(chat);
             await _context.SaveChangesAsync();
+            await RemoveCachedChat(chatId);
             return true;
         }
 
@@ -71,9 +97,18 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
             return true;
         }
 
-        public async Task<Chat?> GetChatAsync(Guid chatId)
+        public async Task<CachedChat?> GetChatAsync(Guid chatId)
         {
-            return await _context.Chats.FirstOrDefaultAsync(e => e.Id == chatId);
+            var cachedChat = await _cacheService.GetAsync<CachedChat>($"{_cacheChatKeyPrefix}{chatId}");
+            if (cachedChat != null)
+                return cachedChat;
+
+            var chat = await _context.Chats.FirstOrDefaultAsync(e => e.Id == chatId);
+            if (chat == null)
+                return null;
+
+            await CacheChat(chat);
+            return chat.ToCachedChat();
         }
 
         public async Task<List<Chat>> GetChatsByWorkspaceIdAsync(Guid workspaceId)
@@ -93,6 +128,16 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
                 WorkspaceId = e.Id,
                 Chats = e.Chats.Select(e => e.ToChatBody()).ToList()
             }).ToList();
+        }
+
+        private async Task CacheChat(Chat chat)
+        {
+            await _cacheService.SetAsync($"{_cacheChatKeyPrefix}{chat.Id}", chat.ToCachedChat(), TimeSpan.FromHours(1), TimeSpan.FromHours(6));
+        }
+
+        private async Task RemoveCachedChat(Guid chatId)
+        {
+            await _cacheService.RemoveAsync($"{_cacheChatKeyPrefix}{chatId}");
         }
     }
 }

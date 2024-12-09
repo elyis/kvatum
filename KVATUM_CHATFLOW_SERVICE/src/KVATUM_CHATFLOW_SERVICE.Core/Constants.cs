@@ -1,4 +1,4 @@
-namespace Microservice_module.Core
+namespace KVATUM_CHATFLOW_SERVICE.Core
 {
     public class Constants
     {

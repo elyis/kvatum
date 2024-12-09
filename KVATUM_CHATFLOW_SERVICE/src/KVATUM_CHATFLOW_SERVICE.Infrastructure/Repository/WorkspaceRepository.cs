@@ -1,5 +1,7 @@
+using KVATUM_CHATFLOW_SERVICE.Core.Entities.Cache;
 using KVATUM_CHATFLOW_SERVICE.Core.Entities.Models;
 using KVATUM_CHATFLOW_SERVICE.Core.IRepository;
+using KVATUM_CHATFLOW_SERVICE.Core.IService;
 using KVATUM_CHATFLOW_SERVICE.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,25 +9,31 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
 {
     public class WorkspaceRepository : IWorkspaceRepository
     {
+        private readonly ICacheService _cacheService;
         private readonly ServerFlowDbContext _context;
+        private readonly string _cacheWorkspaceKeyPrefix = "workspace:";
 
-        public WorkspaceRepository(ServerFlowDbContext context)
+        public WorkspaceRepository(
+            ServerFlowDbContext context,
+            ICacheService cacheService)
         {
             _context = context;
+            _cacheService = cacheService;
         }
 
-        public async Task<Workspace?> AddWorkspaceAsync(string name, Hub hub, string hexColor)
+        public async Task<CachedWorkspace?> AddWorkspaceAsync(string name, Guid hubId, string hexColor)
         {
             var workspace = new Workspace
             {
                 Name = name,
-                Hub = hub,
+                HubId = hubId,
                 HexColor = hexColor
             };
 
             await _context.Workspaces.AddAsync(workspace);
             await _context.SaveChangesAsync();
-            return workspace;
+            await CacheWorkspace(workspace);
+            return workspace.ToCachedWorkspace();
         }
 
         public async Task<bool> DeleteWorkspaceAsync(Guid id)
@@ -34,14 +42,29 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
             if (workspace == null)
                 return true;
 
-            _context.Workspaces.Remove(workspace);
+            var oldEntity = await _context.Workspaces.FirstOrDefaultAsync(e => e.Id == id);
+            if (oldEntity == null)
+                return true;
+
+            _context.Workspaces.Remove(oldEntity);
             await _context.SaveChangesAsync();
+
+            await RemoveCachedWorkspace(id);
             return true;
         }
 
-        public async Task<Workspace?> GetWorkspaceAsync(Guid id)
+        public async Task<CachedWorkspace?> GetWorkspaceAsync(Guid id)
         {
-            return await _context.Workspaces.FirstOrDefaultAsync(e => e.Id == id);
+            var cachedWorkspace = await GetCachedWorkspace(id);
+            if (cachedWorkspace != null)
+                return cachedWorkspace;
+
+            var workspace = await _context.Workspaces.FirstOrDefaultAsync(e => e.Id == id);
+            if (workspace == null)
+                return null;
+
+            await CacheWorkspace(workspace);
+            return workspace.ToCachedWorkspace();
         }
 
         public async Task<List<Workspace>> GetWorkspacesAsync(Guid hubId, int limit, int offset)
@@ -55,13 +78,32 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
 
         public async Task<Workspace?> UpdateWorkspaceIconAsync(Guid id, string fileName)
         {
-            var workspace = await GetWorkspaceAsync(id);
+            var workspace = await _context.Workspaces.FirstOrDefaultAsync(e => e.Id == id);
             if (workspace == null)
                 return null;
 
             workspace.Icon = fileName;
             await _context.SaveChangesAsync();
+            await CacheWorkspace(workspace);
             return workspace;
+        }
+
+        private async Task CacheWorkspace(Workspace workspace)
+        {
+            var key = $"{_cacheWorkspaceKeyPrefix}{workspace.Id}";
+            await _cacheService.SetAsync(key, workspace, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(6));
+        }
+
+        private async Task<CachedWorkspace?> GetCachedWorkspace(Guid id)
+        {
+            var key = $"{_cacheWorkspaceKeyPrefix}{id}";
+            return await _cacheService.GetAsync<CachedWorkspace>(key);
+        }
+
+        private async Task RemoveCachedWorkspace(Guid id)
+        {
+            var key = $"{_cacheWorkspaceKeyPrefix}{id}";
+            await _cacheService.RemoveAsync(key);
         }
     }
 }
