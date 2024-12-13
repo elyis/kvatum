@@ -14,7 +14,7 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
         private readonly AuthDbContext _context;
 
         private readonly ILogger<AccountRepository> _logger;
-        private readonly string _cacheAccountKeyPrefix = "account:";
+        private readonly string _cacheAccountKeyPrefix = "account";
         private readonly ICacheService _cacheService;
 
         public AccountRepository(
@@ -67,7 +67,7 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
 
         public async Task<CachedAccount?> GetAsync(Guid id)
         {
-            var cachedAccount = await GetFromCacheAsync<CachedAccount>($"{_cacheAccountKeyPrefix}{id}");
+            var cachedAccount = await GetFromCacheAsync<CachedAccount>($"{_cacheAccountKeyPrefix}:{id}");
             if (cachedAccount != null)
                 return cachedAccount;
 
@@ -82,7 +82,8 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
 
         public async Task<CachedAccount?> GetAsync(string email)
         {
-            var cachedAccount = await GetFromCacheAsync<CachedAccount>($"{_cacheAccountKeyPrefix}{email}");
+            var cachedAccount = await GetFromCacheAsync<CachedAccount>($"{_cacheAccountKeyPrefix}:{email}");
+
             if (cachedAccount != null)
                 return cachedAccount;
 
@@ -117,7 +118,7 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
 
         public async Task<CachedAccount?> GetAccountByEmailOrNicknameAsync(string identifier)
         {
-            var cachedAccount = await GetFromCacheAsync<CachedAccount>($"{_cacheAccountKeyPrefix}{identifier}");
+            var cachedAccount = await GetFromCacheAsync<CachedAccount>($"{_cacheAccountKeyPrefix}:{identifier}");
             if (cachedAccount != null)
                 return cachedAccount;
 
@@ -132,7 +133,7 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
 
         public async Task<CachedAccount?> GetAccountByNicknameAsync(string nickname)
         {
-            var cachedAccount = await GetFromCacheAsync<CachedAccount>($"{_cacheAccountKeyPrefix}{nickname}");
+            var cachedAccount = await GetFromCacheAsync<CachedAccount>($"{_cacheAccountKeyPrefix}:{nickname}");
             if (cachedAccount != null)
                 return cachedAccount;
 
@@ -170,27 +171,28 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
 
         private async Task CacheAccount(CachedAccount cachedAccount, TimeSpan slidingExpiration, TimeSpan absoluteExpiration)
         {
-            var mainKey = $"{_cacheAccountKeyPrefix}{cachedAccount.Id}";
-            await _cacheService.SetAsync(mainKey, cachedAccount, slidingExpiration, absoluteExpiration);
-            await _cacheService.SetAsync($"{_cacheAccountKeyPrefix}{cachedAccount.Email}", mainKey, slidingExpiration, absoluteExpiration);
-            await _cacheService.SetAsync($"{_cacheAccountKeyPrefix}{cachedAccount.Nickname}", mainKey, slidingExpiration, absoluteExpiration);
+
+            var indexes = new string[] { cachedAccount.Email, cachedAccount.Nickname };
+            await _cacheService.SetIndexedKeyAsync(_cacheAccountKeyPrefix, cachedAccount.Id.ToString(), indexes, cachedAccount, slidingExpiration, absoluteExpiration);
         }
 
         private async Task<T?> GetFromCacheAsync<T>(string key)
         {
-            var cachedEntity = await _cacheService.GetResponseCacheAsync(key);
+            var cachedEntity = await _cacheService.GetStringAsync(key);
             if (cachedEntity == null)
                 return default;
 
-            _logger.LogInformation($"Cache value is ${cachedEntity.Value}");
+            var partsKey = cachedEntity.Split(':');
+            T? entity;
 
-            if (cachedEntity.IsIndexKey)
+            if (partsKey.Length == 2)
             {
-                var entity = await _cacheService.GetAsync<T>(cachedEntity.Value);
-                return entity;
+                entity = await _cacheService.GetAsync<T>(cachedEntity);
+                _logger.LogInformation($"Получено из индекса: {cachedEntity} со значением {JsonSerializer.Serialize(entity)}");
             }
-
-            return JsonSerializer.Deserialize<T>(cachedEntity.Value);
+            else
+                entity = JsonSerializer.Deserialize<T>(cachedEntity);
+            return entity;
         }
 
         public async Task<CachedAccount?> AccountAuthAsync(string email, string passwordHash)

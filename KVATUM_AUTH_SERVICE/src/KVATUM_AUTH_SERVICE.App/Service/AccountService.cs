@@ -5,11 +5,11 @@ using KVATUM_AUTH_SERVICE.Core.IService;
 
 namespace KVATUM_AUTH_SERVICE.App.Service
 {
-    public class UserService : IUserService
+    public class AccountService : IAccountService
     {
         private readonly IAccountRepository _accountRepository;
 
-        public UserService(IAccountRepository accountRepository)
+        public AccountService(IAccountRepository accountRepository)
         {
             _accountRepository = accountRepository;
         }

@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using KVATUM_AUTH_SERVICE.Core.Entities.Request;
 using KVATUM_AUTH_SERVICE.Core.IRepository;
-using KVATUM_AUTH_SERVICE.Core.IService;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 

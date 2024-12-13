@@ -1,3 +1,5 @@
+using KVATUM_AUTH_SERVICE.Core.Entities.Models;
+
 namespace KVATUM_AUTH_SERVICE.Core.Entities.Cache
 {
     public class CachedAccountSession
@@ -8,5 +10,16 @@ namespace KVATUM_AUTH_SERVICE.Core.Entities.Cache
         public Guid AccountId { get; set; }
 
         public string? Token { get; set; }
+
+        public AccountSession ToAccountSession()
+        {
+            return new AccountSession
+            {
+                Id = Id,
+                Ip = Ip,
+                UserAgent = UserAgent,
+                AccountId = AccountId,
+            };
+        }
     }
 }

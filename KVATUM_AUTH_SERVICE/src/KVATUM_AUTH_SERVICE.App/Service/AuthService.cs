@@ -51,7 +51,7 @@ namespace KVATUM_AUTH_SERVICE.App.Service
                 };
             }
 
-            var account = session.Account;
+            var account = await _accountRepository.GetAsync(session.AccountId);
             var accountCredentials = await UpdateToken(account.Role, account.Id, session.Id);
             return new ServiceResponse<OutputAccountCredentialsBody>
             {
@@ -124,7 +124,6 @@ namespace KVATUM_AUTH_SERVICE.App.Service
                     StatusCode = HttpStatusCode.BadRequest
                 };
             }
-
 
             var account = await _accountRepository.AddAsync(
                 email,

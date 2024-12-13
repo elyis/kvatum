@@ -19,7 +19,7 @@ namespace KVATUM_AUTH_SERVICE.Api.Controllers.Api
         }
 
         [SwaggerOperation("Запрос на регистрацию")]
-        [SwaggerResponse(200, "Успешно создан", Type = typeof(OutputAccountCredentialsBody))]
+        [SwaggerResponse(200, "Код отправлен на почту")]
         [SwaggerResponse(400, "Токен не валиден или активирован")]
         [SwaggerResponse(409, "Почта уже существует")]
 

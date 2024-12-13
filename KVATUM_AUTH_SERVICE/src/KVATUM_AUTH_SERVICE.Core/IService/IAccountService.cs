@@ -3,7 +3,7 @@ using KVATUM_AUTH_SERVICE.Core.Entities.Response;
 
 namespace KVATUM_AUTH_SERVICE.Core.IService
 {
-    public interface IUserService
+    public interface IAccountService
     {
         Task<ServiceResponse<ProfileBody>> GetProfileByEmail(string email);
         Task<ServiceResponse<IEnumerable<ProfileBody>>> GetAccountsByPatternNickname(string patternNickname, int limit, int offset);

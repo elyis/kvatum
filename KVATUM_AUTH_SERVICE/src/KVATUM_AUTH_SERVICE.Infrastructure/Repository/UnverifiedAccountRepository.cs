@@ -4,6 +4,7 @@ using KVATUM_AUTH_SERVICE.Core.Entities.Request;
 using KVATUM_AUTH_SERVICE.Core.IRepository;
 using KVATUM_AUTH_SERVICE.Infrastructure.Data;
 using KVATUM_AUTH_SERVICE.Core.IService;
+using Microsoft.Extensions.Logging;
 
 namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
 {
@@ -11,15 +12,18 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
     {
         private readonly AuthDbContext _context;
         private readonly ICacheService _cacheService;
+        private readonly ILogger<UnverifiedAccountRepository> _logger;
 
-        private readonly string _cacheUnverifiedAccountKeyPrefix = "unverified-account:";
+        private readonly string _cacheUnverifiedAccountKeyPrefix = "unverified-account";
 
         public UnverifiedAccountRepository(
             AuthDbContext context,
-            ICacheService cacheService)
+            ICacheService cacheService,
+            ILogger<UnverifiedAccountRepository> logger)
         {
             _context = context;
             _cacheService = cacheService;
+            _logger = logger;
         }
 
         public async Task<UnverifiedAccount?> AddAsync(SignUpBody body, string verificationCode)
@@ -48,6 +52,8 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
             if (account == null)
                 return true;
 
+            _context.Entry(account).State = EntityState.Detached;
+
             _context.UnverifiedAccounts.Remove(account);
             await _context.SaveChangesAsync();
             await RemoveCachedUnverifiedAccount(email);
@@ -59,6 +65,12 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
             var cachedAccount = await GetCachedUnverifiedAccount(email);
             if (cachedAccount != null)
             {
+                var trackedEntity = _context.UnverifiedAccounts.Local.FirstOrDefault(e => e.Id == cachedAccount.Id);
+                if (trackedEntity != null)
+                {
+                    return trackedEntity;
+                }
+
                 AttachUnverifiedAccount(cachedAccount);
                 return cachedAccount;
             }
@@ -72,25 +84,33 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
 
         private async Task CacheUnverifiedAccount(UnverifiedAccount account)
         {
-            var key = $"{_cacheUnverifiedAccountKeyPrefix}{account.Email}";
+            var key = $"{_cacheUnverifiedAccountKeyPrefix}:{account.Email}";
             await _cacheService.SetAsync(key, account, TimeSpan.FromMinutes(5), TimeSpan.FromMinutes(10));
         }
 
         private async Task<UnverifiedAccount?> GetCachedUnverifiedAccount(string email)
         {
-            var key = $"{_cacheUnverifiedAccountKeyPrefix}{email}";
+            var key = $"{_cacheUnverifiedAccountKeyPrefix}:{email}";
             return await _cacheService.GetAsync<UnverifiedAccount>(key);
         }
 
         private void AttachUnverifiedAccount(UnverifiedAccount account)
         {
-            if (!_context.UnverifiedAccounts.Local.Any(e => e.Id == account.Id))
+            var trackedEntity = _context.UnverifiedAccounts.Local.FirstOrDefault(e => e.Id == account.Id);
+
+            if (trackedEntity != null)
+            {
+                _context.Entry(trackedEntity).CurrentValues.SetValues(account);
+            }
+            else
+            {
                 _context.UnverifiedAccounts.Attach(account);
+            }
         }
 
         private async Task RemoveCachedUnverifiedAccount(string email)
         {
-            var key = $"{_cacheUnverifiedAccountKeyPrefix}{email}";
+            var key = $"{_cacheUnverifiedAccountKeyPrefix}:{email}";
             await _cacheService.RemoveAsync(key);
         }
     }

@@ -60,6 +60,7 @@ void ConfigureServices(IServiceCollection services)
     var sendConfirmationCodeQueueName = GetEnvVar("RABBITMQ_SEND_CONFIRMATION_CODE_QUEUE_NAME");
 
     var redisConnectionString = GetEnvVar("REDIS_CONNECTION_STRING");
+    var redisInstanceName = GetEnvVar("REDIS_INSTANCE_NAME");
 
     services.AddControllers(e =>
     {
@@ -69,7 +70,7 @@ void ConfigureServices(IServiceCollection services)
     services.AddStackExchangeRedisCache(options =>
     {
         options.Configuration = redisConnectionString;
-        options.InstanceName = "kvatum";
+        options.InstanceName = redisInstanceName;
     });
 
     services.AddCors(setup =>
@@ -137,7 +138,7 @@ void ConfigureServices(IServiceCollection services)
                 profileImageQueueName
             );
         });
-    services.AddScoped<IUserService, UserService>();
+    services.AddScoped<IAccountService, AccountService>();
 
     services.AddSingleton<INotifyService, RabbitMqNotifyService>(sp => new RabbitMqNotifyService(
         rabbitMqHostname,
