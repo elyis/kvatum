@@ -45,6 +45,7 @@ void ConfigureServices(IServiceCollection services)
     var rabbitMqPassword = GetEnvVar("RABBITMQ_PASSWORD");
     var updateHubIconQueue = GetEnvVar("RABBITMQ_HUB_ICON_QUEUE_NAME");
     var updateWorkspaceIconQueue = GetEnvVar("RABBITMQ_WORKSPACE_ICON_QUEUE_NAME");
+    var redisInstanceName = GetEnvVar("REDIS_INSTANCE_NAME");
 
     var redisConnectionString = GetEnvVar("REDIS_CONNECTION_STRING");
     services.AddControllers(e =>
@@ -87,7 +88,7 @@ void ConfigureServices(IServiceCollection services)
     services.AddStackExchangeRedisCache(options =>
     {
         options.Configuration = redisConnectionString;
-        options.InstanceName = "kvatum";
+        options.InstanceName = redisInstanceName;
     });
 
     services.AddDistributedMemoryCache();

@@ -59,9 +59,9 @@ namespace KVATUM_CHATFLOW_SERVICE.Api.Controllers
         [SwaggerOperation(Summary = "Прикрепить чат к workspace", Description = "Прикрепить чат к workspace")]
         [SwaggerResponse(200, Description = "Успешное прикрепление чата", Type = typeof(ChatBody))]
         [SwaggerResponse(400, Description = "ChatId or WorkspaceId is not exist")]
-        public async Task<IActionResult> AttachChatToWorkspaceAsync(Guid chatId, Guid workspaceId)
+        public async Task<IActionResult> AttachChatToWorkspaceAsync(ChatAttachmentToWorkspaceBody body)
         {
-            var response = await _chatService.AttachChatToWorkspaceAsync(chatId, workspaceId);
+            var response = await _chatService.AttachChatToWorkspaceAsync(body.ChatId, body.WorkspaceId);
             if (!response.IsSuccess)
                 return StatusCode((int)response.StatusCode, response.Errors);
 
@@ -72,9 +72,9 @@ namespace KVATUM_CHATFLOW_SERVICE.Api.Controllers
         [SwaggerOperation(Summary = "Открепить чат от workspace", Description = "Открепить чат от workspace")]
         [SwaggerResponse(204, Description = "Успешное открепление чата")]
         [SwaggerResponse(400, Description = "ChatId or WorkspaceId is not exist")]
-        public async Task<IActionResult> DetachChatFromWorkspaceAsync(Guid chatId, Guid workspaceId)
+        public async Task<IActionResult> DetachChatFromWorkspaceAsync(ChatAttachmentToWorkspaceBody body)
         {
-            var response = await _chatService.DetachChatFromWorkspaceAsync(chatId, workspaceId);
+            var response = await _chatService.DetachChatFromWorkspaceAsync(body.ChatId, body.WorkspaceId);
             if (!response.IsSuccess)
                 return StatusCode((int)response.StatusCode, response.Errors);
 

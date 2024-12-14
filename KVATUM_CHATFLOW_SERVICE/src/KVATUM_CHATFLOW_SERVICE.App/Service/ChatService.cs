@@ -102,7 +102,11 @@ namespace KVATUM_CHATFLOW_SERVICE.App.Service
             {
                 IsSuccess = true,
                 StatusCode = HttpStatusCode.OK,
-                Body = chats.FirstOrDefault(),
+                Body = chats.FirstOrDefault() ?? new WorkspaceChatsBody
+                {
+                    WorkspaceId = workspaceId,
+                    Chats = new List<ChatBody>()
+                },
             };
         }
 

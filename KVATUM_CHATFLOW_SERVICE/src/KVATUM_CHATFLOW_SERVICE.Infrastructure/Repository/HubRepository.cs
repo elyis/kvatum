@@ -13,8 +13,9 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
     {
         private readonly ServerFlowDbContext _context;
         private readonly ICacheService _cacheService;
-        private readonly string _cacheHubKeyPrefix = "hub:";
-        private readonly string _cacheJoiningInvitationKeyPrefix = "hub-invitation:";
+        private readonly string _cacheHubKeyPrefix = "hub";
+        private readonly string _cacheJoiningInvitationKeyPrefix = "hub-invitation";
+        private readonly string _cacheHubMemberKeyPrefix = "hub-member";
 
         public HubRepository(
             ServerFlowDbContext context,
@@ -84,10 +85,19 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
             return hub;
         }
 
-        public async Task<HubMember?> GetHubMemberAsync(Guid hubId, Guid memberId)
+        private async Task<CachedHubMember?> GetHubMemberAsync(Guid hubId, Guid memberId)
         {
-            return await _context.HubMembers.FirstOrDefaultAsync(e => e.HubId == hubId
+            var cachedHubMember = await GetCachedHubMember(hubId, memberId);
+            if (cachedHubMember != null)
+                return cachedHubMember;
+
+            var hubMember = await _context.HubMembers.FirstOrDefaultAsync(e => e.HubId == hubId
                                                                       && e.MemberId == memberId);
+            if (hubMember == null)
+                return null;
+
+            await CacheHubMember(hubMember);
+            return hubMember.ToCachedHubMember();
         }
 
         public async Task<HubMember?> AddMemberToHubAsync(Guid hubId, Guid memberId)
@@ -102,6 +112,7 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
                 MemberId = memberId
             });
             await _context.SaveChangesAsync();
+            await CacheHubMember(result.Entity);
             return result.Entity;
         }
 
@@ -121,7 +132,7 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
 
         public async Task<CachedHub?> GetHubByIdAsync(Guid id)
         {
-            var cachedHub = await _cacheService.GetAsync<CachedHub>($"{_cacheHubKeyPrefix}{id}");
+            var cachedHub = await _cacheService.GetAsync<CachedHub>($"{_cacheHubKeyPrefix}:{id}");
             if (cachedHub != null)
                 return cachedHub;
 
@@ -139,7 +150,7 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
             if (hubMember == null)
                 return true;
 
-            _context.HubMembers.Remove(hubMember);
+            _context.HubMembers.Remove(new HubMember { HubId = hubId, MemberId = memberId });
             await _context.SaveChangesAsync();
             return true;
         }
@@ -152,15 +163,22 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
 
             hub.Name = name;
             await _context.SaveChangesAsync();
+
             await CacheHub(hub);
             return hub.ToCachedHub();
         }
 
         public async Task<CachedJoiningInvitation?> GetHubJoiningInvitationByHubIdAsync(Guid hubId)
         {
-            var cachedInvitation = await _cacheService.GetAsync<CachedJoiningInvitation>($"{_cacheJoiningInvitationKeyPrefix}{hubId}");
+            var cachedInvitation = await _cacheService.GetAsync<CachedJoiningInvitation>($"{_cacheJoiningInvitationKeyPrefix}:{hubId}");
             if (cachedInvitation != null)
+            {
+                var trackedInvitation = _context.HubJoiningInvitations.Local.FirstOrDefault(e => e.HubId == hubId);
+                if (trackedInvitation != null)
+                    return trackedInvitation.ToCachedInvitation();
+
                 return cachedInvitation;
+            }
 
             var invitation = await _context.HubJoiningInvitations.FirstOrDefaultAsync(e => e.HubId == hubId);
             if (invitation == null)
@@ -189,9 +207,15 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
 
         public async Task<CachedJoiningInvitation?> GetHubJoiningInvitationByHashAsync(string hash)
         {
-            var cachedInvitation = await _cacheService.GetAsync<CachedJoiningInvitation>($"{_cacheJoiningInvitationKeyPrefix}{hash}");
+            var cachedInvitation = await _cacheService.GetAsync<CachedJoiningInvitation>($"{_cacheJoiningInvitationKeyPrefix}:{hash}");
             if (cachedInvitation != null)
+            {
+                var trackedInvitation = _context.HubJoiningInvitations.Local.FirstOrDefault(e => e.HashInvitation == hash);
+                if (trackedInvitation != null)
+                    return trackedInvitation.ToCachedInvitation();
+
                 return cachedInvitation;
+            }
 
             var invitation = await _context.HubJoiningInvitations.FirstOrDefaultAsync(e => e.HashInvitation == hash);
             if (invitation == null)
@@ -209,6 +233,7 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
 
             hub.Icon = fileName;
             await _context.SaveChangesAsync();
+
             await CacheHub(hub);
             return hub.ToCachedHub();
         }
@@ -216,21 +241,34 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
         private async Task CacheJoiningInvitation(HubJoiningInvitation invitation)
         {
             var cachedInvitation = invitation.ToCachedInvitation();
-            var key = $"{_cacheJoiningInvitationKeyPrefix}{invitation.HubId}";
+            var key = $"{_cacheJoiningInvitationKeyPrefix}:{invitation.HubId}";
             await _cacheService.SetAsync(key, cachedInvitation, TimeSpan.FromHours(2), TimeSpan.FromHours(12));
-            await _cacheService.SetAsync($"{_cacheJoiningInvitationKeyPrefix}{invitation.HashInvitation}", cachedInvitation, TimeSpan.FromHours(2), TimeSpan.FromHours(12));
+            await _cacheService.SetAsync($"{_cacheJoiningInvitationKeyPrefix}:{invitation.HashInvitation}", cachedInvitation, TimeSpan.FromHours(2), TimeSpan.FromHours(12));
+        }
+
+        private async Task CacheHubMember(HubMember hubMember)
+        {
+            var cachedHubMember = hubMember.ToCachedHubMember();
+            var key = $"{_cacheHubMemberKeyPrefix}:{hubMember.HubId}:{hubMember.MemberId}";
+            await _cacheService.SetAsync(key, cachedHubMember, TimeSpan.FromHours(1), TimeSpan.FromHours(6));
+        }
+
+        private async Task<CachedHubMember?> GetCachedHubMember(Guid hubId, Guid memberId)
+        {
+            var key = $"{_cacheHubMemberKeyPrefix}:{hubId}:{memberId}";
+            return await _cacheService.GetAsync<CachedHubMember>(key);
         }
 
         private async Task CacheHub(Hub hub)
         {
             var cachedHub = hub.ToCachedHub();
-            var key = $"{_cacheHubKeyPrefix}{hub.Id}";
+            var key = $"{_cacheHubKeyPrefix}:{hub.Id}";
             await _cacheService.SetAsync(key, cachedHub, TimeSpan.FromHours(1), TimeSpan.FromHours(6));
         }
 
         private async Task RemoveCachedHub(Guid id)
         {
-            var key = $"{_cacheHubKeyPrefix}{id}";
+            var key = $"{_cacheHubKeyPrefix}:{id}";
             await _cacheService.RemoveAsync(key);
         }
     }

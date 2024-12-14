@@ -1,5 +1,6 @@
 using KVATUM_CHATFLOW_SERVICE.Core.Entities.Cache;
 using KVATUM_CHATFLOW_SERVICE.Core.Entities.Models;
+using KVATUM_CHATFLOW_SERVICE.Core.Enums;
 using KVATUM_CHATFLOW_SERVICE.Core.IRepository;
 using KVATUM_CHATFLOW_SERVICE.Core.IService;
 using KVATUM_CHATFLOW_SERVICE.Infrastructure.Data;
@@ -11,7 +12,7 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
     {
         private readonly ICacheService _cacheService;
         private readonly ServerFlowDbContext _context;
-        private readonly string _cacheWorkspaceKeyPrefix = "workspace:";
+        private readonly string _cacheWorkspaceKeyPrefix = "workspace";
 
         public WorkspaceRepository(
             ServerFlowDbContext context,
@@ -30,8 +31,30 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
                 HexColor = hexColor
             };
 
+            var chats = new List<Chat>
+            {
+                new() {
+                    Name = "Conference",
+                    Type = ChatType.Conference.ToString()
+                },
+
+                new() {
+                    Name = "Channel",
+                    Type = ChatType.Channel.ToString()
+                },
+
+                new() {
+                    Name = "Chat",
+                    Type = ChatType.Chat.ToString()
+                }
+            };
+
+            workspace.Chats = chats;
+
             await _context.Workspaces.AddAsync(workspace);
+            await _context.Chats.AddRangeAsync(chats);
             await _context.SaveChangesAsync();
+
             await CacheWorkspace(workspace);
             return workspace.ToCachedWorkspace();
         }
@@ -90,19 +113,20 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
 
         private async Task CacheWorkspace(Workspace workspace)
         {
-            var key = $"{_cacheWorkspaceKeyPrefix}{workspace.Id}";
-            await _cacheService.SetAsync(key, workspace, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(6));
+            var key = $"{_cacheWorkspaceKeyPrefix}:{workspace.Id}";
+            var cachedWorkspace = workspace.ToCachedWorkspace();
+            await _cacheService.SetAsync(key, cachedWorkspace, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(6));
         }
 
         private async Task<CachedWorkspace?> GetCachedWorkspace(Guid id)
         {
-            var key = $"{_cacheWorkspaceKeyPrefix}{id}";
+            var key = $"{_cacheWorkspaceKeyPrefix}:{id}";
             return await _cacheService.GetAsync<CachedWorkspace>(key);
         }
 
         private async Task RemoveCachedWorkspace(Guid id)
         {
-            var key = $"{_cacheWorkspaceKeyPrefix}{id}";
+            var key = $"{_cacheWorkspaceKeyPrefix}:{id}";
             await _cacheService.RemoveAsync(key);
         }
     }

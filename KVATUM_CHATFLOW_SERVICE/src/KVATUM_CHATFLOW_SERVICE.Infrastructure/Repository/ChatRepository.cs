@@ -13,7 +13,7 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
     {
         private readonly ServerFlowDbContext _context;
         private readonly ICacheService _cacheService;
-        private readonly string _cacheChatKeyPrefix = "chat:";
+        private readonly string _cacheChatKeyPrefix = "chat";
 
         public ChatRepository(
             ServerFlowDbContext context,
@@ -30,6 +30,10 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
                 Name = name,
                 Type = type.ToString(),
             };
+
+            chat = (await _context.Chats.AddAsync(chat)).Entity;
+            await _context.SaveChangesAsync();
+
 
             var workspaceChat = new WorkspaceChat
             {
@@ -67,7 +71,7 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
 
         public async Task<bool> DeleteChatAsync(Guid chatId)
         {
-            var cachedChat = await _cacheService.GetAsync<CachedChat>($"{_cacheChatKeyPrefix}{chatId}");
+            var cachedChat = await _cacheService.GetAsync<CachedChat>($"{_cacheChatKeyPrefix}:{chatId}");
             var chat = new Chat { Id = chatId };
             if (cachedChat == null)
             {
@@ -99,7 +103,7 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
 
         public async Task<CachedChat?> GetChatAsync(Guid chatId)
         {
-            var cachedChat = await _cacheService.GetAsync<CachedChat>($"{_cacheChatKeyPrefix}{chatId}");
+            var cachedChat = await _cacheService.GetAsync<CachedChat>($"{_cacheChatKeyPrefix}:{chatId}");
             if (cachedChat != null)
                 return cachedChat;
 
@@ -132,12 +136,12 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
 
         private async Task CacheChat(Chat chat)
         {
-            await _cacheService.SetAsync($"{_cacheChatKeyPrefix}{chat.Id}", chat.ToCachedChat(), TimeSpan.FromHours(1), TimeSpan.FromHours(6));
+            await _cacheService.SetAsync($"{_cacheChatKeyPrefix}:{chat.Id}", chat.ToCachedChat(), TimeSpan.FromHours(1), TimeSpan.FromHours(6));
         }
 
         private async Task RemoveCachedChat(Guid chatId)
         {
-            await _cacheService.RemoveAsync($"{_cacheChatKeyPrefix}{chatId}");
+            await _cacheService.RemoveAsync($"{_cacheChatKeyPrefix}:{chatId}");
         }
     }
 }
