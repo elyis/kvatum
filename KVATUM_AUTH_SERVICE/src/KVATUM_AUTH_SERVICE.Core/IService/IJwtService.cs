@@ -4,7 +4,7 @@ namespace KVATUM_AUTH_SERVICE.Core.IService
 {
     public interface IJwtService
     {
-        OutputAccountCredentialsBody GenerateDefaultTokenPair(TokenPayload tokenPayload);
+        OutputAccountCredentialsBody GenerateOutputAccountCredentials(TokenPayload tokenPayload);
         TokenPayload GetTokenPayload(string token);
     }
 }

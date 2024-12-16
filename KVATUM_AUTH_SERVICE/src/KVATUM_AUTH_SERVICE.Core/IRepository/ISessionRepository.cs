@@ -5,7 +5,7 @@ namespace KVATUM_AUTH_SERVICE.Core.IRepository
 {
     public interface ISessionRepository
     {
-        Task<CachedAccountSession?> GetSessionByTokenAndAccount(string refreshTokenHash);
+        Task<CachedAccountSession?> GetSessionByToken(string refreshTokenHash);
         Task<AccountSession?> GetSessionAsync(Guid accountId, string userAgent, string ipAddress);
         Task<List<AccountSession>> GetSessionsAsync(Guid accountId, int limit, int offset);
         Task<CachedAccountSession?> GetOrAddSessionAsync(string userAgent, string ipAddress, Guid accountId);

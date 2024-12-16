@@ -56,15 +56,6 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
             return cachedAccount;
         }
 
-
-
-        public async Task<List<Account>> GetAccountsAsync(List<string> identifiers)
-        {
-            var result = await _context.Accounts.Where(e => identifiers.Contains(e.Email))
-                .ToListAsync();
-            return result;
-        }
-
         public async Task<CachedAccount?> GetAsync(Guid id)
         {
             var cachedAccount = await GetFromCacheAsync<CachedAccount>($"{_cacheAccountKeyPrefix}:{id}");

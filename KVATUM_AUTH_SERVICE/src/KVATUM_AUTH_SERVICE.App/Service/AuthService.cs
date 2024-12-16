@@ -40,7 +40,7 @@ namespace KVATUM_AUTH_SERVICE.App.Service
 
         public async Task<ServiceResponse<OutputAccountCredentialsBody>> RestoreAccessToken(string refreshToken)
         {
-            var session = await _sessionRepository.GetSessionByTokenAndAccount(refreshToken);
+            var session = await _sessionRepository.GetSessionByToken(refreshToken);
             if (session == null)
             {
                 return new ServiceResponse<OutputAccountCredentialsBody>
@@ -159,7 +159,7 @@ namespace KVATUM_AUTH_SERVICE.App.Service
                 SessionId = sessionId
             };
 
-            var accountCredentials = _jwtService.GenerateDefaultTokenPair(tokenPayload);
+            var accountCredentials = _jwtService.GenerateOutputAccountCredentials(tokenPayload);
             accountCredentials.RefreshToken = await _sessionRepository.UpdateTokenAsync(accountCredentials.RefreshToken, tokenPayload.SessionId);
             return accountCredentials;
         }

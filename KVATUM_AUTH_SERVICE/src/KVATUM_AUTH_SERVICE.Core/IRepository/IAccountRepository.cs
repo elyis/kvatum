@@ -12,7 +12,6 @@ namespace KVATUM_AUTH_SERVICE.Core.IRepository
         Task<CachedAccount?> GetAccountByNicknameAsync(string nickname);
         Task<List<CachedAccount>> GetAccountsByPatternNicknameAsync(string pattern, int limit, int offset);
         Task<CachedAccount?> GetAsync(Guid id);
-        Task<List<Account>> GetAccountsAsync(List<string> emails);
         Task<List<Account>> GetAccountsAsync(IEnumerable<Guid> ids);
         Task<CachedAccount?> GetAsync(string email);
         Task<CachedAccount?> UpdateProfileIconAsync(Guid accountId, string filename);

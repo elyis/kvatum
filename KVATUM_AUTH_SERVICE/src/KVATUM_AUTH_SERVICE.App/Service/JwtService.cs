@@ -38,7 +38,7 @@ namespace KVATUM_AUTH_SERVICE.App.Service
 
         private string GenerateRefreshToken() => Guid.NewGuid().ToString();
 
-        public OutputAccountCredentialsBody GenerateDefaultTokenPair(TokenPayload tokenPayload)
+        public OutputAccountCredentialsBody GenerateOutputAccountCredentials(TokenPayload tokenPayload)
         {
             var claims = new Dictionary<string, string>{
                 { "AccountId", tokenPayload.AccountId.ToString() },

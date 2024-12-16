@@ -10,9 +10,9 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Data
         {
         }
 
-        public DbSet<Account> Accounts { get; set; }
-        public DbSet<AccountSession> AccountSessions { get; set; }
-        public DbSet<UnverifiedAccount> UnverifiedAccounts { get; set; }
+        virtual public DbSet<Account> Accounts { get; set; }
+        virtual public DbSet<AccountSession> AccountSessions { get; set; }
+        virtual public DbSet<UnverifiedAccount> UnverifiedAccounts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

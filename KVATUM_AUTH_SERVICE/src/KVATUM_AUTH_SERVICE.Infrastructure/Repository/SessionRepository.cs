@@ -65,7 +65,7 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
             return cachedSession;
         }
 
-        public async Task<CachedAccountSession?> GetSessionByTokenAndAccount(string refreshTokenHash)
+        public async Task<CachedAccountSession?> GetSessionByToken(string refreshTokenHash)
         {
             var cachedSession = await GetFromCacheAsync<CachedAccountSession>($"{_cacheAccountSessionKeyPrefix}:{refreshTokenHash}");
             if (cachedSession != null)
