@@ -1,6 +1,5 @@
 using System.Net.WebSockets;
 using System.Text.Json;
-using KVATUM_STREAMING_SERVICE.App.Service;
 using KVATUM_STREAMING_SERVICE.Core.Entities.Request;
 using KVATUM_STREAMING_SERVICE.Core.Entities.Response;
 using KVATUM_STREAMING_SERVICE.Core.Enums;
