@@ -1,5 +1,9 @@
 # Kvatum
 
+## Documentation
+
+- [Events Documentation](streaming-service/docs/events/order.md)
+
 ## Installation
 
 Для установки проекта необходимо выполнить следующие шаги:
