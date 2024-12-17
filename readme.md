@@ -2,7 +2,7 @@
 
 ## Documentation
 
-- [Events Documentation](./KVATUM_STREAMING_SERVICE/docs/events)
+- [Events Documentation](./KVATUM_STREAMING_SERVICE/README.md)
 
 ## Installation
 
