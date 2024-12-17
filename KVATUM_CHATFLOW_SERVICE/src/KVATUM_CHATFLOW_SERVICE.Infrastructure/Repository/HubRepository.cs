@@ -155,7 +155,7 @@ namespace KVATUM_CHATFLOW_SERVICE.Infrastructure.Repository
             return true;
         }
 
-        public async Task<CachedHub?> UpdateHubAsync(Guid id, string name)
+        public async Task<CachedHub?> UpdateHubNameAsync(Guid id, string name)
         {
             var hub = await _context.Hubs.FirstOrDefaultAsync(e => e.Id == id);
             if (hub == null)

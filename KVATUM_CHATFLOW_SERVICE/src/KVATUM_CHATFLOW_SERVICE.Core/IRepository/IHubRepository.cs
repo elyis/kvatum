@@ -14,7 +14,7 @@ namespace KVATUM_CHATFLOW_SERVICE.Core.IRepository
         Task<Hub?> AddHubAsync(CreateHubBody body, Guid creatorId, string hashInvitation, string hexColor);
         Task<HubMember?> AddMemberToHubAsync(Guid hubId, Guid memberId);
         Task<bool> RemoveMemberFromHubAsync(Guid hubId, Guid memberId);
-        Task<CachedHub?> UpdateHubAsync(Guid id, string name);
+        Task<CachedHub?> UpdateHubNameAsync(Guid id, string name);
         Task<CachedHub?> UpdateHubIconAsync(Guid id, string fileName);
         Task<bool> DeleteHubAsync(Guid id);
     }
