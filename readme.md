@@ -2,7 +2,7 @@
 
 ## Documentation
 
-- [Events Documentation](streaming-service/docs/events/order.md)
+- [Events Documentation](./KVATUM_STREAMING_SERVICE/docs/events/order.md)
 
 ## Installation
 
