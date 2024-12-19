@@ -58,6 +58,7 @@ void ConfigureServices(IServiceCollection services)
 
     var profileImageQueueName = GetEnvVar("RABBITMQ_PROFILE_IMAGE_QUEUE_NAME");
     var sendConfirmationCodeQueueName = GetEnvVar("RABBITMQ_SEND_CONFIRMATION_CODE_QUEUE_NAME");
+    var cachedAccountUpdateQueueName = GetEnvVar("RABBITMQ_CACHED_ACCOUNT_UPDATE_QUEUE_NAME");
 
     var redisConnectionString = GetEnvVar("REDIS_CONNECTION_STRING");
     var redisInstanceName = GetEnvVar("REDIS_INSTANCE_NAME");
@@ -144,7 +145,8 @@ void ConfigureServices(IServiceCollection services)
         rabbitMqHostname,
         rabbitMqUserName,
         rabbitMqPassword,
-        sendConfirmationCodeQueueName
+        sendConfirmationCodeQueueName,
+        cachedAccountUpdateQueueName
     ));
 
     services.AddSingleton<IJwtService, JwtService>(sp => new JwtService(

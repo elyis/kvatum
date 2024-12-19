@@ -3,6 +3,7 @@ using KVATUM_STREAMING_SERVICE.App.Handler;
 using KVATUM_STREAMING_SERVICE.App.Service;
 using KVATUM_STREAMING_SERVICE.Core.IHandler;
 using KVATUM_STREAMING_SERVICE.Core.IService;
+using KVATUM_STREAMING_SERVICE.Infrastructure.Service;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.IdentityModel.Tokens;
@@ -32,8 +33,14 @@ void ConfigureServices(IServiceCollection services)
     var jwtIssuer = GetEnvVar("JWT_AUTH_ISSUER");
     var jwtAudience = GetEnvVar("JWT_AUTH_AUDIENCE");
 
+    var rabbitMqHostname = GetEnvVar("RABBITMQ_HOSTNAME");
+    var rabbitMqUserName = GetEnvVar("RABBITMQ_USERNAME");
+    var rabbitMqPassword = GetEnvVar("RABBITMQ_PASSWORD");
+
     var corsAllowedOrigins = GetEnvVar("CORS_ALLOWED_ORIGINS");
     var redisConnectionString = GetEnvVar("REDIS_CONNECTION_STRING");
+    var cachedAccountUpdateQueueName = GetEnvVar("RABBITMQ_CACHED_ACCOUNT_UPDATE_QUEUE_NAME");
+    var redisInstanceName = GetEnvVar("REDIS_INSTANCE_NAME");
 
     services.AddControllers(e =>
     {
@@ -81,12 +88,14 @@ void ConfigureServices(IServiceCollection services)
     services.AddStackExchangeRedisCache(options =>
     {
         options.Configuration = redisConnectionString;
-        options.InstanceName = "kvatum";
+        options.InstanceName = redisInstanceName;
     });
 
     services.AddDistributedMemoryCache();
 
     services.AddAuthorization();
+    services.AddScoped<IMainConnectionHandler, MainConnectionHandler>();
+
     services.AddSingleton<IRoomConnectionService, RoomConnectionService>();
     services.AddSingleton<ISerializationService, SerializationService>();
     services.AddSingleton<IJwtService, JwtService>();
@@ -105,9 +114,22 @@ void ConfigureServices(IServiceCollection services)
     services.AddSingleton<IEventHandler, HandlePing>();
     services.AddSingleton<ICacheService, CacheService>();
 
-    services.AddSingleton<IMessageHandler, MessageHandler>();
+    services.AddSingleton<RabbitMqService>(provider =>
+        {
+            var scopeFactory = provider.GetRequiredService<IServiceScopeFactory>();
+            return new RabbitMqService(
+                scopeFactory,
+                provider.GetRequiredService<IMainConnectionService>(),
+                provider.GetRequiredService<ICacheService>(),
+                rabbitMqHostname,
+                rabbitMqUserName,
+                rabbitMqPassword,
+                cachedAccountUpdateQueueName
+            );
+        });
 
-    services.AddScoped<IMainConnectionHandler, MainConnectionHandler>();
+    services.AddSingleton<IMessageHandler, MessageHandler>();
+    services.AddHostedService(provider => provider.GetRequiredService<RabbitMqService>());
 
     ConfigureSwagger(services);
 }

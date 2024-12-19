@@ -128,5 +128,11 @@ namespace KVATUM_STREAMING_SERVICE.App.Service
                 await Task.WhenAll(tasks);
             }
         }
+
+        public void UpdateAccountProfile(Guid accountId, AccountProfileBody accountProfile)
+        {
+            if (_connections.TryGetValue(accountId, out var connection))
+                connection.AccountProfile = accountProfile;
+        }
     }
 }

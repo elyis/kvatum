@@ -12,7 +12,7 @@ namespace KVATUM_STREAMING_SERVICE.App.Service
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ICacheService _cacheService;
         private readonly ILogger<AccountService> _logger;
-        private readonly string _cacheAccountKeyPrefix = "account:";
+        private readonly string _cacheAccountKeyPrefix = "account";
 
         public AccountService(
             IHttpClientFactory httpClientFactory,
@@ -26,7 +26,7 @@ namespace KVATUM_STREAMING_SERVICE.App.Service
 
         public async Task<AccountProfileBody?> GetAccountProfileAsync(Guid accountId)
         {
-            var cacheKey = $"{_cacheAccountKeyPrefix}{accountId}";
+            var cacheKey = $"{_cacheAccountKeyPrefix}:{accountId}";
 
             var stopwatch = Stopwatch.StartNew();
             var cachedData = await _cacheService.GetFromCacheAsync<CachedAccount>(cacheKey);

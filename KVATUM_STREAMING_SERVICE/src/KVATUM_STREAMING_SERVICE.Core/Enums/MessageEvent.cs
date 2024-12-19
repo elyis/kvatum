@@ -17,6 +17,7 @@ namespace KVATUM_STREAMING_SERVICE.Core.Enums
         UpdateAnswer,
         Disconnect,
         Ping,
-        Pong
+        Pong,
+        UpdateAccountProfile
     }
 }

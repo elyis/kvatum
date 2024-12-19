@@ -23,8 +23,10 @@ namespace KVATUM_AUTH_SERVICE.Tests.Repository
             _cacheServiceMock = new Mock<ICacheService>();
             _context = AuthDbFactory.Create("account");
 
+            var notifyServiceMock = new Mock<INotifyService>();
+
             SetupMocks(_context.Accounts.First());
-            _accountRepository = new AccountRepository(_context, logger, _cacheServiceMock.Object);
+            _accountRepository = new AccountRepository(_context, logger, _cacheServiceMock.Object, notifyServiceMock.Object);
         }
 
         void SetupMocks(Account account)

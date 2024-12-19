@@ -12,6 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\KVATUM_STREAMING_SERVICE.App\KVATUM_STREAMING_SERVICE.App.csproj" />
     <ProjectReference Include="..\KVATUM_STREAMING_SERVICE.Core\KVATUM_STREAMING_SERVICE.Core.csproj" />
+    <ProjectReference Include="..\KVATUM_STREAMING_SERVICE.Infrastructure\KVATUM_STREAMING_SERVICE.Infrastructure.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

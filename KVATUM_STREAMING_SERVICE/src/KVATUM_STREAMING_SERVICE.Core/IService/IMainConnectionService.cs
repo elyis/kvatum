@@ -7,6 +7,7 @@ namespace KVATUM_STREAMING_SERVICE.Core.IService
     public interface IMainConnectionService
     {
         void ConnectOrUpdate(Guid accountId, MainConnectionBody body);
+        void UpdateAccountProfile(Guid accountId, AccountProfileBody accountProfile);
         AccountConnectionBody? GetAccountConnectionBody(Guid accountId);
         Guid? GetCurrentRoomId(Guid accountId);
         void UpdateMicroState(Guid accountId, bool isMicroEnabled);

@@ -6,6 +6,9 @@ services:
     restart: always
     ports:
       - "8092:80"
+    depends_on:
+      kvatum-rabbitmq-service:
+        condition: service_healthy
     environment:
       - JWT_AUTH_SECRET=${JWT_AUTH_SECRET}
       - JWT_AUTH_ISSUER=${JWT_AUTH_ISSUER}
@@ -16,3 +19,10 @@ services:
       - AUTH_SERVICE_BASE_URL=${AUTH_SERVICE_BASE_URL}
       - FILE_SERVER_URL=${FILE_SERVER_URL}
       - REDIS_CONNECTION_STRING=${REDIS_CONNECTION_STRING}
+
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
+      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+
+      - RABBITMQ_CACHED_ACCOUNT_UPDATE_QUEUE_NAME=${RABBITMQ_CACHED_ACCOUNT_UPDATE_QUEUE_NAME}
+      - REDIS_INSTANCE_NAME=${REDIS_INSTANCE_NAME}

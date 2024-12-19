@@ -13,18 +13,21 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Service
         private readonly string _password;
 
         private readonly string _queueSendConfirmationCodeName;
+        private readonly string _queueCachedAccountUpdateName;
 
         public RabbitMqNotifyService(
             string hostname,
             string username,
             string password,
-            string queueSendConfirmationCodeName)
+            string queueSendConfirmationCodeName,
+            string queueCachedAccountUpdateName)
         {
             _hostname = hostname;
             _username = username;
             _password = password;
 
             _queueSendConfirmationCodeName = queueSendConfirmationCodeName;
+            _queueCachedAccountUpdateName = queueCachedAccountUpdateName;
         }
 
         public void Publish<T>(T message, PublishEvent eventType)
@@ -62,6 +65,7 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Service
             return eventType switch
             {
                 PublishEvent.SendConfirmationCode => _queueSendConfirmationCodeName,
+                PublishEvent.CachedAccountUpdate => _queueCachedAccountUpdateName,
                 _ => throw new ArgumentException("Invalid event type")
             };
         }

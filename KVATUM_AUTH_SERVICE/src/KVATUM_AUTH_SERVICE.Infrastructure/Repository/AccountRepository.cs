@@ -6,6 +6,7 @@ using KVATUM_AUTH_SERVICE.Core.IService;
 using Microsoft.Extensions.Logging;
 using KVATUM_AUTH_SERVICE.Core.Entities.Cache;
 using System.Text.Json;
+using KVATUM_AUTH_SERVICE.Core.Entities.Events;
 
 namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
 {
@@ -16,15 +17,18 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
         private readonly ILogger<AccountRepository> _logger;
         private readonly string _cacheAccountKeyPrefix = "account";
         private readonly ICacheService _cacheService;
+        private readonly INotifyService _notifyService;
 
         public AccountRepository(
             AuthDbContext context,
             ILogger<AccountRepository> logger,
-            ICacheService cacheService)
+            ICacheService cacheService,
+            INotifyService notifyService)
         {
             _context = context;
             _logger = logger;
             _cacheService = cacheService;
+            _notifyService = notifyService;
         }
 
         public async Task<CachedAccount?> AddAsync(
@@ -98,6 +102,7 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
 
             var cachedAccount = account.ToCachedAccount();
             await CacheAccount(cachedAccount, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(4));
+            _notifyService.Publish(new CachedAccount { Id = cachedAccount.Id }, PublishEvent.CachedAccountUpdate);
             return cachedAccount;
         }
 
@@ -156,13 +161,13 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
 
             var cachedAccount = account.ToCachedAccount();
             await CacheAccount(cachedAccount, TimeSpan.FromMinutes(2), TimeSpan.FromMinutes(4));
+            _notifyService.Publish(new CachedAccount { Id = cachedAccount.Id }, PublishEvent.CachedAccountUpdate);
             return cachedAccount;
         }
 
 
         private async Task CacheAccount(CachedAccount cachedAccount, TimeSpan slidingExpiration, TimeSpan absoluteExpiration)
         {
-
             var indexes = new string[] { cachedAccount.Email, cachedAccount.Nickname };
             await _cacheService.SetIndexedKeyAsync(_cacheAccountKeyPrefix, cachedAccount.Id.ToString(), indexes, cachedAccount, slidingExpiration, absoluteExpiration);
         }
