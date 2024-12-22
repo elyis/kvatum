@@ -9,7 +9,6 @@ namespace KVATUM_AUTH_SERVICE.App.Service
     {
         private readonly IDistributedCache _cache;
         private readonly ILogger<CacheService> _logger;
-        private readonly string _instanceName;
 
         public CacheService(
             IDistributedCache cache,
@@ -17,7 +16,6 @@ namespace KVATUM_AUTH_SERVICE.App.Service
         {
             _cache = cache;
             _logger = logger;
-            _instanceName = Environment.GetEnvironmentVariable("REDIS_INSTANCE_NAME") ?? throw new Exception("REDIS_INSTANCE_NAME is not set");
         }
 
         public async Task SetAsync<T>(string key, T data, TimeSpan slidingExpiration, TimeSpan absoluteExpiration)
@@ -29,7 +27,6 @@ namespace KVATUM_AUTH_SERVICE.App.Service
             };
             var serializedData = JsonSerializer.Serialize(data);
             await _cache.SetStringAsync(key, serializedData, options);
-            _logger.LogInformation($"Закэшировано: {key} со значением {serializedData}");
         }
 
         public async Task SetIndexedKeyAsync<T>(
@@ -62,7 +59,6 @@ namespace KVATUM_AUTH_SERVICE.App.Service
             var cachedData = await _cache.GetStringAsync(key);
             if (cachedData == null)
             {
-                _logger.LogInformation($"Ключ {key} не найден в кэше");
                 return default;
             }
 
@@ -78,13 +74,7 @@ namespace KVATUM_AUTH_SERVICE.App.Service
 
         public async Task<string?> GetStringAsync(string key)
         {
-            var cachedData = await _cache.GetStringAsync(key);
-            if (cachedData == null)
-                _logger.LogInformation($"Ключ {key} не найден в кэше");
-            else
-                _logger.LogInformation($"Получено из кэша: {key} со значением {cachedData}");
-
-            return cachedData;
+            return await _cache.GetStringAsync(key);
         }
     }
 }

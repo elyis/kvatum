@@ -1,4 +1,5 @@
 using System.Text;
+using KVATUM_STREAMING_SERVICE;
 using KVATUM_STREAMING_SERVICE.App.Handler;
 using KVATUM_STREAMING_SERVICE.App.Service;
 using KVATUM_STREAMING_SERVICE.Core.IHandler;
@@ -100,7 +101,7 @@ void ConfigureServices(IServiceCollection services)
     services.AddSingleton<ISerializationService, SerializationService>();
     services.AddSingleton<IJwtService, JwtService>();
     services.AddSingleton<IMainConnectionService, MainConnectionService>();
-    services.AddSingleton<IAccountService, AccountService>();
+    services.AddSingleton<IAccountManager, AccountManager>();
 
     services.AddSingleton<IEventHandler, HandleAnswer>();
     services.AddSingleton<IEventHandler, HandleChangeMicroState>();

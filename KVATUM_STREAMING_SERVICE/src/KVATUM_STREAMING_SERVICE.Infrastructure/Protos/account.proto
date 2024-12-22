@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+option csharp_namespace = "KVATUM_STREAMING_SERVICE";
+
+package account;
+
+
+service AccountService{
+    rpc GetAccountById(RequestAccountMessage) returns (AccountResponse);
+}
+
+message RequestAccountMessage{
+    string id = 1;
+}
+
+message AccountResponse{
+    oneof result {
+        ResponseAccountMessage account = 1;
+        string error = 2;
+    }
+}
+
+message ResponseAccountMessage{
+    string id = 1;
+    string email = 2;
+    string nickname = 3;
+    string role = 4;
+    repeated ImageWithResolutionMessage image = 5;
+}
+
+message ImageWithResolutionMessage{
+    ImageResolutions resolution = 1;
+    string urlImage = 2;
+}
+
+enum ImageResolutions{
+    Small = 0;
+    Medium = 1;
+    Big = 2;
+}

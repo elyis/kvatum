@@ -14,7 +14,7 @@ namespace KVATUM_STREAMING_SERVICE.App.Service
         private readonly ISerializationService _serializationService;
         private readonly IMainConnectionService _mainConnectionService;
         private readonly IRoomConnectionService _roomConnectionService;
-        private readonly IAccountService _accountService;
+        private readonly IAccountManager _accountService;
         private readonly ILogger<MainConnectionHandler> _logger;
         private readonly IMessageHandler _messageHandler;
 
@@ -26,7 +26,7 @@ namespace KVATUM_STREAMING_SERVICE.App.Service
             IMessageHandler messageHandler,
             IMainConnectionService mainConnectionService,
             IRoomConnectionService roomConnectionService,
-            IAccountService accountService)
+            IAccountManager accountService)
         {
             _serializationService = serializationService;
             _jwtService = jwtService;

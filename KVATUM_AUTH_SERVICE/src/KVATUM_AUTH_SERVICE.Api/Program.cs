@@ -63,6 +63,11 @@ void ConfigureServices(IServiceCollection services)
     var redisConnectionString = GetEnvVar("REDIS_CONNECTION_STRING");
     var redisInstanceName = GetEnvVar("REDIS_INSTANCE_NAME");
 
+    services.AddGrpc(options =>
+    {
+        options.EnableDetailedErrors = true;
+    });
+
     services.AddControllers(e =>
     {
         e.OutputFormatters.RemoveType<HttpNoContentOutputFormatter>();
@@ -182,6 +187,7 @@ void ConfigureMiddleware(WebApplication app)
     app.UseSession();
     app.UseAuthorization();
 
+    app.MapGrpcService<AccountGrpcService>();
     app.MapControllers();
 }
 

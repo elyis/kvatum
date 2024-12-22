@@ -40,9 +40,6 @@ namespace KVATUM_STREAMING_SERVICE.App.Handler
             if (accountConnection == null)
                 return;
 
-            var accountConnectionString = JsonSerializer.Serialize(accountConnection);
-            _logger.LogInformation($"AccountConnection: {accountConnectionString}");
-
             var iceCandidateBody = new IceCandidateBody
             {
                 EventType = MessageEvent.IceCandidate,

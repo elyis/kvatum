@@ -184,7 +184,6 @@ namespace KVATUM_AUTH_SERVICE.Infrastructure.Repository
             if (partsKey.Length == 2)
             {
                 entity = await _cacheService.GetAsync<T>(cachedEntity);
-                _logger.LogInformation($"Получено из индекса: {cachedEntity} со значением {JsonSerializer.Serialize(entity)}");
             }
             else
                 entity = JsonSerializer.Deserialize<T>(cachedEntity);
