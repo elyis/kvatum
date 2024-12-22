@@ -45,3 +45,8 @@
 - **File Service**: Документация для сервиса работы с файлами.
   - `/file/swagger`
 
+- **Streaming Service**: Документация для сервиса работы с потоками.
+  - `/streaming/swagger`
+
+
+
