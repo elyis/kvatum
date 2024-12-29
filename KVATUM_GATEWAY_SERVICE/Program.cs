@@ -38,12 +38,13 @@ builder.Logging.SetMinimumLevel(LogLevel.Error);
 var app = builder.Build();
 
 app.UseDefaultFiles();
-app.UseStaticFiles("/swagger");
+app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAllOrigins");
 
 app.UseRouting();
+
 app.UseAuthorization();
 app.UseWebSockets(new WebSocketOptions
 {
