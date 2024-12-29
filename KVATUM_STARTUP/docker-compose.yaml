@@ -40,7 +40,7 @@ services:
   kvatum-rabbitmq-service:
     extends:
       file: services/rabbitmq-service.yaml
-      service: rabbitmq
+      service: kvatum-rabbitmq-service
 
   kvatum-file-service:
     extends:

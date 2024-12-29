@@ -5,7 +5,7 @@ services:
     image: kvatum-chatflow-service
     restart: always
     ports:
-      - "8080:80"
+      - "8933:80"
     depends_on:
       kvatum-chat-flow-db:
         condition: service_started

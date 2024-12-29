@@ -8,6 +8,6 @@ services:
       - POSTGRES_PASSWORD=${CHAT_FLOW_DB_PASSWORD}
       - POSTGRES_DB=${CHAT_FLOW_DB_DATABASE}
     ports:
-      - "5435:5432"
+      - "5985:5432"
     volumes:
       - kvatum-chat-flow-data:/var/lib/postgresql/data
