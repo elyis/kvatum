@@ -5,4 +5,4 @@ services:
     image: kvatum-gateway-service
     restart: always
     ports:
-      - "8081:80"
+      - "8936:80"

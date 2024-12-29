@@ -5,7 +5,7 @@ services:
     image: kvatum-streaming-service
     restart: always
     ports:
-      - "8092:80"
+      - "8937:80"
     depends_on:
       kvatum-rabbitmq-service:
         condition: service_healthy

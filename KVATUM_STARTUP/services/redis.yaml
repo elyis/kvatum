@@ -6,8 +6,8 @@ services:
     image: redis:latest
     restart: always
     ports:
-      - "6379:6379"
-    hostname: redis
+      - "6979:6379"
+    hostname: kvatum-redis-service
     healthcheck:
       test: [ "CMD", "redis-cli", "--raw", "ping" ]
       interval: 1m30s

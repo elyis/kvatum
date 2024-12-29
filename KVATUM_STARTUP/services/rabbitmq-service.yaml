@@ -1,13 +1,13 @@
 version: '3.8'
 
 services:
-  rabbitmq:
+  kvatum-rabbitmq-service:
     image: rabbitmq:management
     restart: always
     ports:
-      - "5672:5672"
-      - "15672:15672"
-    hostname: rabbitmq
+      - "5678:5672"
+      - "15678:15672"
+    hostname: kvatum-rabbitmq-service
     healthcheck:
       test: rabbitmq-diagnostics -q ping
       interval: 30s

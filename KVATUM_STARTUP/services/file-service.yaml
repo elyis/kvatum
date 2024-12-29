@@ -5,12 +5,12 @@ services:
     image: kvatum-file-service
     restart: always
     ports:
-      - "8091:80"
+      - "8935:80"
     depends_on:
       kvatum-rabbitmq-service:
         condition: service_healthy
     environment:
-      - RABBITMQ_HOSTNAME=rabbitmq
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
       - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
       - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
       - RABBITMQ_PROFILE_IMAGE_QUEUE_NAME=${RABBITMQ_PROFILE_IMAGE_QUEUE_NAME}
